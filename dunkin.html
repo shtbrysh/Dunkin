@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dunkin' Donuts - Interactiva</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --orange: #FF6719;
+            --pink: #E11383;
+            --brown: #653819;
+            --white-trans: rgba(255, 255, 255, 0.9); 
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Open Sans', sans-serif;
+            overflow-x: hidden;
+            background-image: url('xd.jpg'); 
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-color: #fff5f0;
+            cursor: default;
+        }
+
+        /* --- CHISPAS DEL CURSOR --- */
+        .sprinkle {
+            position: fixed;
+            width: 8px;
+            height: 4px;
+            border-radius: 2px;
+            pointer-events: none;
+            z-index: 10000;
+            animation: spark-out 1s linear forwards;
+        }
+
+        @keyframes spark-out {
+            0% { transform: translate(0,0) rotate(0deg); opacity: 1; }
+            100% { transform: translate(var(--mdx), var(--mdy)) rotate(360deg); opacity: 0; }
+        }
+
+        /* --- EFECTO REVEAL --- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease-out;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #falling-container {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 999;
+        }
+
+        .falling-donut {
+            position: absolute;
+            font-size: 2rem;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(360deg); opacity: 0.3; }
+        }
+
+        /* --- NUEVO: ESTILO DEL GLASEADO CHORREANDO --- */
+        .dripping-glaze {
+            width: 100%;
+            height: 40px;
+            background-color: var(--pink);
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-radius: 30px 30px 0 0;
+            clip-path: polygon(0% 0%, 100% 0%, 100% 70%, 95% 80%, 90% 45%, 85% 90%, 80% 55%, 75% 100%, 70% 60%, 65% 85%, 60% 50%, 55% 95%, 50% 65%, 45% 80%, 40% 45%, 35% 90%, 30% 55%, 25% 100%, 20% 60%, 15% 85%, 10% 50%, 5% 95%, 0% 70%);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 8%;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo { font-family: 'Titan One', cursive; color: var(--pink); font-size: 1.5rem; }
+        .logo span { color: var(--orange); }
+        .nav-links { list-style: none; display: flex; gap: 20px; }
+        .nav-links a { text-decoration: none; color: var(--brown); font-weight: bold; }
+        
+        .btn-order {
+            background: var(--orange);
+            color: white !important;
+            padding: 10px 25px;
+            border-radius: 50px;
+            transition: 0.3s;
+            border: none; cursor: pointer;
+        }
+
+        .hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 80px 8% 60px; /* Ajustado el padding para el glaseado */
+            margin: 40px 8%;
+            min-height: 60vh;
+            flex-wrap: wrap;
+            background: var(--white-trans);
+            border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative; /* Necesario para el glaseado */
+        }
+
+        .hero-text h1 {
+            font-family: 'Titan One', cursive;
+            font-size: 4.5rem;
+            color: var(--pink);
+            line-height: 0.9;
+        }
+
+        .hero-text h1 span { color: var(--orange); }
+
+        .hero-img img {
+            width: 350px;
+            border-radius: 20px;
+            filter: drop-shadow(0 15px 20px rgba(0,0,0,0.2));
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0); }
+            50% { transform: translateY(-20px) rotate(3deg); }
+        }
+
+        .custom-section {
+            background: var(--white-trans);
+            margin: 40px 8%;
+            padding: 60px 40px 40px; /* Ajustado el padding para el glaseado */
+            border-radius: 30px;
+            text-align: center;
+            position: relative; /* Necesario para el glaseado */
+        }
+
+        .custom-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 50px;
+            flex-wrap: wrap;
+        }
+
+        #donut-display {
+            width: 250px;
+            height: 250px;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+            /* --- NUEVO: EFECTO DE RESPLANDOR --- */
+            filter: drop-shadow(0 0 15px rgba(225, 19, 131, 0.3));
+        }
+
+        .color-options { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 15px; 
+        }
+
+        .color-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-family: 'Titan One';
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .btn-pink { background: #ff99cc; }
+        .btn-chocolate { background: #4b2c20; }
+        .btn-maple { background: #f3e492; color: #653819; }
+        .btn-coco { background: #ffffff; color: #653819; border: 1px solid #ddd; }
+        .btn-pistacho { background: #93c47d; }
+        .btn-caramelo { background: #e69138; }
+        .btn-arandano { background: #6a5acd; }
+        .btn-oreo { background: #333333; }
+        .btn-limon { background: #fff44f; color: #653819; }
+        .btn-glaseada { background: #ffd700; color: #653819; }
+
+
+        .products { 
+            padding: 60px 8% 50px; /* Ajustado el padding para el glaseado */
+            text-align: center; 
+            background: var(--white-trans);
+            margin: 40px 8%;
+            border-radius: 30px;
+            position: relative; /* Necesario para el glaseado */
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+
+        .card img { width: 100%; max-width: 180px; height: 180px; object-fit: cover; border-radius: 15px; }
+        .card h3 { font-family: 'Titan One', cursive; color: var(--brown); margin-top: 15px; }
+
+    </style>
+</head>
+<body>
+
+    <div id="falling-container"></div>
+
+    <nav class="navbar">
+        <div class="logo">DUNKIN' <span>DONUTS</span></div>
+        <ul class="nav-links">
+            <li><a href="#">MENÚ</a></li>
+            <li><a href="#">UBICACIONES</a></li>
+            <li><a href="#" class="btn-order">ORDENA AQUÍ</a></li>
+        </ul>
+    </nav>
+
+    <header class="hero reveal">
+        <div class="dripping-glaze"></div>
+        
+        <div class="hero-text">
+            <h1>AMAMOS<br><span>EL CAFÉ</span></h1>
+            <p>Y las donas más frescas del mundo.</p>
+            <button class="btn-order" style="font-size:1.2rem;">Ver Menú</button>
+        </div>
+        <div class="hero-img">
+            <img src="Dunkin Donuts social media - Khaled Zaabalawi.jpg" alt="Dona Hero">
+        </div>
+    </header>
+
+    <section class="custom-section reveal">
+        <div class="dripping-glaze" style="background-color: var(--orange);"></div>
+
+        <h2 style="font-family:'Titan One'; color: var(--brown);">¡GLASEA TU DONA!</h2>
+        <div class="custom-container">
+            <div class="color-options">
+                <button class="color-btn btn-pink" onclick="changeDonut('fresa')">Fresa</button>
+                <button class="color-btn btn-chocolate" onclick="changeDonut('chocolate')">Chocolate</button>
+                <button class="color-btn btn-maple" onclick="changeDonut('vainilla')">Vainilla</button>
+                <button class="color-btn btn-coco" onclick="changeDonut('coco')">Coco</button>
+                <button class="color-btn btn-pistacho" onclick="changeDonut('pistacho')">Pistacho</button>
+                <button class="color-btn btn-caramelo" onclick="changeDonut('caramelo')">Caramelo</button>
+                <button class="color-btn btn-arandano" onclick="changeDonut('arandano')">Arándano</button>
+                <button class="color-btn btn-oreo" onclick="changeDonut('oreo')">Oreo</button>
+                <button class="color-btn btn-limon" onclick="changeDonut('limon')">Limón</button>
+                <button class="color-btn btn-glaseada" onclick="changeDonut('glaseada')">Glaseada</button>
+            </div>
+            <img id="donut-display" src="ole.jpg" alt="Personalizador">
+        </div>
+    </section>
+
+    <section class="products reveal">
+        <div class="dripping-glaze"></div>
+
+        <h2 style="font-family:'Titan One'; color: var(--pink); font-size: 2.5rem;">Favoritos de Temporada</h2>
+        <div class="grid">
+            <div class="card">
+                <img src="descarga (3).jpg" alt="Dona">
+                <h3>Glaseada</h3>
+            </div>
+            <div class="card">
+                <img src="aei.jpg" alt="Café">
+                <h3>Iced Coffee</h3>
+            </div>
+            <div class="card">
+                <img src="Blog.jpg" alt="Munchkins">
+                <h3>Munchkins</h3>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        function changeDonut(tipo) {
+            const display = document.getElementById('donut-display');
+            display.style.transform = "scale(0.8) rotate(-10deg)"; // Agregué un poco de rotación al cambio
+            
+            setTimeout(() => {
+                if(tipo === 'fresa') display.src = "oo.jpg"; 
+                else if(tipo === 'chocolate') display.src = "qqqq.jpg"; 
+                else if(tipo === 'vainilla') display.src = "h.jpg";  
+                else if(tipo === 'coco') display.src = "coco.jpg";
+                else if(tipo === 'pistacho') display.src = "i.jpg";
+                else if(tipo === 'caramelo') display.src = "caramelo.jpg";
+                else if(tipo === 'arandano') display.src = "blue.jpg";
+                else if(tipo === 'oreo') display.src = "oreo.jpg";
+                else if(tipo === 'limon') display.src = "limo.jpg";
+                else if(tipo === 'glaseada') display.src = "gla.jpg";
+
+                display.style.transform = "scale(1) rotate(0deg)";
+            }, 200);
+        }
+
+        // CHISPAS DEL CURSOR
+        document.addEventListener('mousemove', (e) => {
+            if (Math.random() < 0.1) {
+                const sprinkle = document.createElement('div');
+                sprinkle.classList.add('sprinkle');
+                const colors = ['#FF6719', '#E11383', '#FFD700', '#FFFFFF'];
+                sprinkle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                sprinkle.style.left = e.clientX + 'px';
+                sprinkle.style.top = e.clientY + 'px';
+                sprinkle.style.setProperty('--mdx', (Math.random() * 100 - 50) + 'px');
+                sprinkle.style.setProperty('--mdy', (Math.random() * 100 - 50) + 'px');
+                document.body.appendChild(sprinkle);
+                setTimeout(() => sprinkle.remove(), 1000);
+            }
+        });
+
+        // REVEAL ANIMATION
+        function reveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                var windowHeight = window.innerHeight;
+                var elementTop = reveals[i].getBoundingClientRect().top;
+                if (elementTop < windowHeight - 50) {
+                    reveals[i].classList.add("active");
+                }
+            }
+        }
+        window.addEventListener("scroll", reveal);
+        reveal();
+
+        // DONAS CAYENDO
+        function createDonut() {
+            const container = document.getElementById('falling-container');
+            const donut = document.createElement('div');
+            const types = ['🍩', '☕', '🧁'];
+            donut.innerText = types[Math.floor(Math.random() * types.length)];
+            donut.classList.add('falling-donut');
+            donut.style.left = Math.random() * 100 + "vw";
+            donut.style.fontSize = (Math.random() * 20 + 20) + "px";
+            const duration = Math.random() * 3 + 4;
+            donut.style.animationDuration = duration + "s";
+            container.appendChild(donut);
+            setTimeout(() => { donut.remove(); }, duration * 1000);
+        }
+        setInterval(createDonut, 600);
+    </script>
+</body>
+</html>
