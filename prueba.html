@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dunkin' RD - Localizador</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.cdnfonts.com/css/dunkin" rel="stylesheet">
+
+    <style>
+        /* ===== VARIABLES DEL PRIMER CÓDIGO ===== */
+        :root {
+            --orange:       #FF6719;
+            --pink:         #E11383;
+            --brown:        #653819;
+            --cream:        #FFF8F2;
+            --white-trans:  rgba(255,255,255,0.92);
+            --shadow-warm:  0 12px 40px rgba(255,103,25,0.18);
+            --radius-xl:    28px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: var(--cream);
+            overflow-x: hidden;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><text y="24" font-size="22">🍩</text></svg>') 16 16, auto;
+        }
+
+        a, button, .icon-btn {
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><text y="24" font-size="22">🧁</text></svg>') 16 16, pointer;
+        }
+
+        /* ===== SPLASH SCREEN (PRIMER CÓDIGO) ===== */
+        #splash {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        #splash.hide { opacity: 0; transform: scale(1.04); pointer-events: none; }
+        .splash-logo { font-family: 'Dunkin', cursive; font-size: 5rem; color: var(--orange); }
+        .splash-logo span { color: var(--pink); }
+        .splash-bar { width: 200px; height: 4px; background: #f0f0f0; border-radius: 99px; overflow: hidden; }
+        .splash-bar-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--orange), var(--pink)); animation: loadBar 1.4s 1s forwards; }
+        @keyframes loadBar { to { width: 100%; } }
+
+        /* ===== HEADER EXACTO DEL PRIMER CÓDIGO ===== */
+        .main-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(255,255,255,0.97);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            padding: 0 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 90px; /* Altura original */
+        }
+
+        .logo-titulo { position: relative; width: 190px; height: 80px; flex-shrink: 0; }
+        .logo-titulo img {
+            height: 130px; /* Tamaño original del primer código */
+            width: auto;
+            object-fit: contain;
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.12));
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 36px;
+            list-style: none;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #1a1a1a;
+            font-family: 'Dunkin', cursive;
+            font-size: 1.5rem;
+            position: relative;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+
+        .nav-menu a:hover { color: var(--pink); transform: translateY(-3px); }
+
+        /* ICONOS DERECHA DEL PRIMER CÓDIGO */
+        .icons-right { display: flex; gap: 12px; align-items: center; }
+        .icon-btn {
+            background: white;
+            border: 1.5px solid #f0eded;
+            border-radius: 50%;
+            width: 58px; height: 58px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+        }
+        .icon-btn:hover { transform: translateY(-6px) scale(1.1); box-shadow: 0 10px 24px rgba(225,19,131,0.25); }
+        .icon-btn .material-icons { font-size: 26px; color: var(--brown); z-index: 1; }
+        .icon-label { font-size: 0.62rem; font-weight: 700; color: #555; z-index: 1; text-transform: uppercase; }
+        .icon-btn:hover .material-icons, .icon-btn:hover .icon-label { color: white; }
+        .icon-btn::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, var(--orange), var(--pink)); opacity: 0; transition: opacity 0.35s; }
+        .icon-btn:hover::before { opacity: 1; }
+
+        /* ===== CONTENIDO MAPA ===== */
+        .map-container { padding: 50px 8%; text-align: center; }
+        .map-container h1 { font-family: 'Titan One'; font-size: 3rem; color: var(--pink); margin-bottom: 30px; }
+        #map { height: 500px; border-radius: var(--radius-xl); box-shadow: var(--shadow-warm); border: 10px solid white; }
+
+        /* ===== FOOTER ===== */
+        .main-footer { background: white; padding: 60px 8% 30px; margin-top: 50px; border-radius: 40px 40px 0 0; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; }
+        .footer-brand h2 { font-family: 'Dunkin'; color: var(--orange); font-size: 2rem; }
+        .footer-brand h2 span { color: var(--pink); }
+        .footer-bottom { border-top: 1px solid #eee; margin-top: 40px; padding-top: 20px; text-align: center; color: var(--brown); font-weight: bold; }
+
+        /* CHISPAS */
+        .sprinkle { position: fixed; width: 8px; height: 4px; pointer-events: none; z-index: 9999; animation: spark-out 0.8s linear forwards; }
+        @keyframes spark-out { to { transform: translate(var(--mdx), var(--mdy)) rotate(360deg); opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <div id="splash">
+        <div class="splash-logo">DUNKIN' <span>RD</span></div>
+        <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+    </div>
+
+    <header class="main-header">
+        <div class="logo-titulo">
+            <img src="https://upload.wikimedia.org/wikipedia/en/thumb/d/d3/Dunkin%27_Donuts_logo.svg/1200px-Dunkin%27_Donuts_logo.svg.png" alt="Dunkin Logo">
+        </div>
+        <ul class="nav-menu">
+            <li><a href="#">Inicio</a></li>
+            <li><a href="#">Menú</a></li>
+            <li><a href="#">Tiendas</a></li>
+        </ul>
+        <div class="icons-right">
+            <a href="#" class="icon-btn">
+                <span class="material-icons">shopping_cart</span>
+                <span class="icon-label">Carrito</span>
+            </a>
+            <a href="#" class="icon-btn">
+                <span class="material-icons">location_on</span>
+                <span class="icon-label">RD</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="map-container">
+        <h1>Localizador <span>RD</span></h1>
+        <div id="map"></div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h2>DUNKIN' <span>RD</span></h2>
+                <p>El sabor que te mueve, ahora más cerca de ti en Dominicana.</p>
+            </div>
+            <div>
+                <h4 style="font-family: 'Titan One'; color: var(--pink);">Legal</h4>
+                <p>Términos y condiciones</p>
+                <p>Política de privacidad</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 Dunkin' Donuts RD. Hecho con 🍩
+        </div>
+    </footer>
+
+    <script>
+        // Quitar Splash
+        window.addEventListener('load', () => {
+            setTimeout(() => document.getElementById('splash').classList.add('hide'), 1500);
+        });
+
+        // Chispas
+        document.addEventListener('mousemove', (e) => {
+            if (Math.random() > 0.8) {
+                const s = document.createElement('div');
+                s.className = 'sprinkle';
+                s.style.left = e.clientX + 'px';
+                s.style.top = e.clientY + 'px';
+                s.style.backgroundColor = ['#FF6719', '#E11383', '#653819'][Math.floor(Math.random()*3)];
+                s.style.setProperty('--mdx', (Math.random()-0.5)*100+'px');
+                s.style.setProperty('--mdy', (Math.random()-0.5)*100+'px');
+                document.body.appendChild(s);
+                setTimeout(() => s.remove(), 800);
+            }
+        });
+    </script>
+</body>
+</html>
