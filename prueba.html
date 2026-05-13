@@ -3,40 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dunkin' RD – Localizador</title>
+    <title>Dunkin' Donuts – Frescura que te mueve</title>
 
-    <!-- Librerías de Mapas (Segundo Código) -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    
-    <!-- Fuentes (Primer Código) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
     <link href="https://fonts.cdnfonts.com/css/dunkin" rel="stylesheet">
 
     <style>
-        /* ===== VARIABLES (EXACTAS CÓDIGO 1) ===== */
+        /* ===== VARIABLES ===== */
         :root {
             --orange:       #FF6719;
             --pink:         #E11383;
             --brown:        #653819;
             --cream:        #FFF8F2;
             --white-trans:  rgba(255,255,255,0.92);
+            --dunkin-orange:#FF6719;
+            --dunkin-pink:  #E11383;
+            --dunkin-brown: #653819;
             --shadow-warm:  0 12px 40px rgba(255,103,25,0.18);
+            --shadow-pink:  0 8px 30px rgba(225,19,131,0.2);
             --radius-xl:    28px;
+            --radius-lg:    18px;
+            --radius-md:    12px;
         }
 
+        /* ===== RESET & BASE ===== */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
 
         body {
             font-family: 'Open Sans', sans-serif;
             background-color: var(--cream);
+            background-image: url("dunkinfont.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
             overflow-x: hidden;
             cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><text y="24" font-size="22">🍩</text></svg>') 16 16, auto;
         }
 
-        /* ===== HEADER (COPIA EXACTA CÓDIGO 1) ===== */
+        a, button, .icon-btn, .nav-menu a {
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><text y="24" font-size="22">🧁</text></svg>') 16 16, pointer;
+        }
+
+        /* ===== SPLASH SCREEN ===== */
+        #splash {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+
+        #splash.hide {
+            opacity: 0;
+            transform: scale(1.04);
+            pointer-events: none;
+        }
+
+        .splash-logo {
+            font-family: 'Dunkin', 'Titan One', cursive;
+            font-size: clamp(3rem, 8vw, 6rem);
+            color: var(--orange);
+            letter-spacing: -1px;
+            animation: splashPop 0.7s cubic-bezier(.34,1.56,.64,1) both;
+        }
+
+        .splash-logo span { color: var(--pink); }
+
+        .splash-tagline {
+            font-family: 'Open Sans', sans-serif;
+            font-size: 1.1rem;
+            color: var(--brown);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fadeUp 0.6s 0.4s ease forwards;
+        }
+
+        .splash-donuts {
+            display: flex;
+            gap: 16px;
+            font-size: 2.4rem;
+            opacity: 0;
+            animation: fadeUp 0.5s 0.6s ease forwards;
+        }
+
+        .splash-donuts span {
+            display: inline-block;
+            animation: spinIn 0.6s cubic-bezier(.34,1.56,.64,1) both;
+        }
+        .splash-donuts span:nth-child(1) { animation-delay: 0.65s; }
+        .splash-donuts span:nth-child(2) { animation-delay: 0.75s; }
+        .splash-donuts span:nth-child(3) { animation-delay: 0.85s; }
+
+        .splash-bar {
+            width: 200px;
+            height: 4px;
+            background: #f0f0f0;
+            border-radius: 99px;
+            overflow: hidden;
+            margin-top: 10px;
+            opacity: 0;
+            animation: fadeUp 0.4s 0.9s ease forwards;
+        }
+
+        .splash-bar-fill {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, var(--orange), var(--pink));
+            border-radius: 99px;
+            animation: loadBar 1.4s 1s cubic-bezier(.4,0,.2,1) forwards;
+        }
+
+        @keyframes splashPop {
+            0%   { opacity: 0; transform: scale(0.6) rotate(-8deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes spinIn {
+            from { opacity: 0; transform: scale(0) rotate(-180deg); }
+            to   { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        @keyframes loadBar {
+            from { width: 0; }
+            to   { width: 100%; }
+        }
+
+        /* ===== FALLING DONUTS ===== */
+        #falling-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 500;
+        }
+
+        .falling-donut {
+            position: absolute;
+            animation: fall linear forwards;
+            user-select: none;
+        }
+
+        @keyframes fall {
+            0%   { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(360deg); opacity: 0.3; }
+        }
+
+        /* ===== CURSOR SPARKS ===== */
+        .sprinkle {
+            position: fixed;
+            width: 8px; height: 4px;
+            border-radius: 2px;
+            pointer-events: none;
+            z-index: 99998;
+            animation: spark-out 0.9s linear forwards;
+        }
+
+        @keyframes spark-out {
+            0%   { transform: translate(0,0) rotate(0deg); opacity: 1; }
+            100% { transform: translate(var(--mdx), var(--mdy)) rotate(360deg); opacity: 0; }
+        }
+
+        /* ===== REVEAL ===== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(36px);
+            transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ===== HEADER ===== */
         .main-header {
             position: sticky;
             top: 0;
@@ -82,11 +234,12 @@
         .nav-menu a {
             text-decoration: none;
             color: #1a1a1a;
-            font-family: 'Dunkin', cursive;
+            font-family: 'Dunkin', 'Titan One', cursive;
             font-weight: 500;
             font-size: 1.5rem;
             position: relative;
             transition: color 0.3s ease, transform 0.3s ease;
+            white-space: nowrap;
             display: inline-block;
         }
 
@@ -102,10 +255,19 @@
             transition: width 0.3s ease;
         }
 
-        .nav-menu a:hover { color: var(--pink); transform: translateY(-3px); }
+        .nav-menu a:hover {
+            color: var(--pink);
+            transform: translateY(-3px);
+        }
+
         .nav-menu a:hover::after { width: 100%; }
 
-        .icons-right { display: flex; gap: 12px; align-items: center; }
+        .icons-right {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-shrink: 0;
+        }
 
         .icon-btn {
             background: white;
@@ -116,156 +278,1318 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            gap: 3px;
             transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+            box-shadow: 0 3px 12px rgba(0,0,0,0.07);
             position: relative;
             overflow: hidden;
-            text-decoration: none;
-            color: inherit;
+              text-decoration: none !important;  /* ← AÑADE ESTO */
+    color: inherit !important;          /* ← AÑADE ESTO */
+
         }
 
         .icon-btn::before {
             content: '';
             position: absolute;
             inset: 0;
+            border-radius: 50%;
             background: linear-gradient(135deg, var(--orange), var(--pink));
             opacity: 0;
             transition: opacity 0.35s ease;
         }
 
         .icon-btn:hover::before { opacity: 1; }
-        .icon-btn:hover { transform: translateY(-6px) scale(1.1); box-shadow: 0 10px 24px rgba(225,19,131,0.25); }
 
-        .icon-wrapper .material-icons { font-size: 26px; color: var(--brown); position: relative; z-index: 1; transition: 0.3s; }
-        .icon-label { font-size: 0.62rem; font-weight: 700; color: #555; position: relative; z-index: 1; text-transform: uppercase; }
-        .icon-btn:hover .material-icons, .icon-btn:hover .icon-label { color: white; }
-
-        /* ===== SECCIÓN MAPA (FUNCIONALIDAD CÓDIGO 2) ===== */
-        .map-section {
-            padding: 60px 8%;
-            text-align: center;
+        .icon-btn:hover {
+            transform: translateY(-6px) scale(1.1);
+            box-shadow: 0 10px 24px rgba(225,19,131,0.25);
+            border-color: transparent;
         }
 
-        .map-section h1 {
-            font-family: 'Titan One', cursive;
-            font-size: 3.5rem;
-            color: var(--pink);
-            margin-bottom: 10px;
-            text-shadow: 3px 3px 0 rgba(225,19,131,0.1);
-        }
-
-        .map-section h1 span { color: var(--orange); }
-
-        #map {
-            height: 550px;
-            width: 100%;
-            margin-top: 30px;
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-warm);
-            border: 10px solid white;
+        .icon-wrapper {
+            position: relative;
             z-index: 1;
         }
 
-        /* ===== FOOTER (COHERENTE CON CÓDIGO 1) ===== */
-        .main-footer {
-            background: white;
-            padding: 60px 8% 30px;
-            border-radius: 40px 40px 0 0;
-            margin-top: 80px;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.05);
+        .icon-wrapper .material-icons {
+            font-size: 26px;
+            color: var(--brown);
+            transition: all 0.3s ease;
         }
 
-        .footer-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        .icon-btn:hover .icon-wrapper .material-icons { color: white; transform: scale(1.2); }
+
+        .icon-label {
+            font-size: 0.62rem;
+            font-weight: 700;
+            color: #555;
+            transition: color 0.3s;
+            position: relative;
+            z-index: 1;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .icon-btn:hover .icon-label { color: white; }
+
+        /* Icon hover animations */
+        .cart-icon:hover .icon-wrapper      { animation: cartBounce 0.6s ease; }
+        .location-icon:hover .icon-wrapper  { animation: locationPulse 0.6s ease; }
+        .favorites-icon:hover .icon-wrapper { animation: heartBeat 0.8s ease; }
+        .support-icon:hover .icon-wrapper   { animation: supportFloat 0.8s ease; }
+
+        @keyframes cartBounce {
+            0%,100% { transform: scale(1.2) rotate(10deg) translateY(0); }
+            50%      { transform: scale(1.3) rotate(10deg) translateY(-8px); }
+        }
+        @keyframes locationPulse {
+            0%,100% { transform: scale(1.2); }
+            50%      { transform: scale(1.5); }
+        }
+        @keyframes heartBeat {
+            0%,100% { transform: scale(1.2); }
+            25%,75% { transform: scale(1.5); }
+            50%      { transform: scale(1.1); }
+        }
+        @keyframes supportFloat {
+            0%,100% { transform: rotate(10deg) translateY(0); }
+            25%      { transform: rotate(-10deg) translateY(-5px); }
+            75%      { transform: rotate(10deg) translateY(-5px); }
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 70px 8%;
+            margin: 40px 6%;
+            min-height: 60vh;
+            flex-wrap: wrap;
             gap: 40px;
+            background: var(--white-trans);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-warm);
+            position: relative;
+            overflow: hidden;
         }
 
-        .footer-brand h2 { font-family: 'Dunkin', cursive; color: var(--orange); font-size: 2.5rem; }
-        .footer-brand h2 span { color: var(--pink); }
-        
-        .footer-links h4 { font-family: 'Titan One', cursive; color: var(--brown); margin-bottom: 20px; }
-        .footer-links p { margin-bottom: 10px; color: #555; font-weight: 600; cursor: pointer; transition: 0.3s; }
-        .footer-links p:hover { color: var(--pink); transform: translateX(5px); }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -60px; right: -60px;
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(255,103,25,0.12) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -60px; left: -60px;
+            width: 280px; height: 280px;
+            background: radial-gradient(circle, rgba(225,19,131,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .hero-text { position: relative; z-index: 1; }
+
+        .hero-text h1 {
+            font-family: 'Titan One', cursive;
+            font-size: clamp(3rem, 6vw, 5.5rem);
+            color: var(--pink);
+            line-height: 0.9;
+            letter-spacing: -1px;
+            text-shadow: 4px 4px 0 rgba(225,19,131,0.15);
+        }
+
+        .hero-text h1 span { color: var(--orange); }
+
+        .hero-text p {
+            font-size: 1.15rem;
+            color: var(--brown);
+            margin: 20px 0 30px;
+            opacity: 0.85;
+        }
+
+        .btn-order {
+            background: linear-gradient(135deg, var(--orange), var(--pink));
+            color: white;
+            padding: 14px 36px;
+            border-radius: 50px;
+            border: none;
+            font-family: 'Titan One', cursive;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+            box-shadow: 0 6px 20px rgba(225,19,131,0.3);
+        }
+
+        .btn-order:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 12px 30px rgba(225,19,131,0.4);
+        }
+
+        .hero-img img {
+            width: clamp(260px, 30vw, 380px);
+            border-radius: var(--radius-xl);
+            filter: drop-shadow(0 20px 30px rgba(255,103,25,0.25));
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%,100% { transform: translateY(0) rotate(0deg); }
+            50%      { transform: translateY(-18px) rotate(2deg); }
+        }
+
+        /* ===== PERSONALIZADOR ===== */
+        .custom-section {
+            background: var(--white-trans);
+            margin: 40px 6%;
+            padding: 50px 40px;
+            border-radius: var(--radius-xl);
+            text-align: center;
+            box-shadow: var(--shadow-warm);
+        }
+
+        .custom-section h2 {
+            font-family: 'Titan One', cursive;
+            color: var(--brown);
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        .custom-section .subtitle {
+            color: #999;
+            font-size: 0.95rem;
+            margin-bottom: 40px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .custom-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 60px;
+            flex-wrap: wrap;
+        }
+
+        .donut-stage {
+            position: relative;
+            width: 280px; height: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .donut-ring {
+            position: absolute;
+            width: 280px; height: 280px;
+            border-radius: 50%;
+            border: 3px dashed rgba(255,103,25,0.2);
+            animation: spinSlow 20s linear infinite;
+        }
+
+        @keyframes spinSlow { to { transform: rotate(360deg); } }
+
+        #donut-display {
+            width: 220px; height: 220px;
+            object-fit: contain;
+            transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), filter 0.3s ease;
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 10px 20px rgba(255,103,25,0.2));
+        }
+
+        #donut-display:hover { transform: scale(1.06) rotate(5deg); }
+
+        .color-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .color-btn {
+            padding: 12px 22px;
+            border: none;
+            border-radius: var(--radius-md);
+            color: white;
+            font-family: 'Titan One', cursive;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .color-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255,255,255,0.18);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .color-btn:hover { transform: translateY(-4px) scale(1.04); box-shadow: 0 8px 20px rgba(0,0,0,0.18); }
+        .color-btn:hover::after { opacity: 1; }
+        .color-btn:active { transform: scale(0.97); }
+
+        .btn-pink       { background: #f06292; }
+        .btn-chocolate  { background: #4e342e; }
+        .btn-maple      { background: #f3d045; color: #6d3e1a; }
+        .btn-coco       { background: #e8d8c4; color: #6d3e1a; border: 2px solid #d4b896; }
+        .btn-pistacho   { background: #66bb6a; }
+        .btn-caramelo   { background: #e08c1a; }
+        .btn-arandano   { background: #7e57c2; }
+        .btn-oreo       { background: #212121; }
+        .btn-limon      { background: #d4e157; color: #555; }
+        .btn-glaseada   { background: linear-gradient(135deg,#ffd700,#ffb347); color: #6d3e1a; }
+
+        /* ===== PRODUCTS ===== */
+        .products {
+            padding: 60px 8%;
+            text-align: center;
+            background: var(--white-trans);
+            margin: 40px 6%;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-warm);
+        }
+
+        .products h2 {
+            font-family: 'Titan One', cursive;
+            color: var(--pink);
+            font-size: 2.4rem;
+            margin-bottom: 8px;
+        }
+
+        .products .section-sub {
+            color: #aaa;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 48px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 28px;
+        }
+
+        .card {
+            background: white;
+            padding: 28px 24px;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+            transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+            border: 1.5px solid rgba(255,103,25,0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,103,25,0.04), rgba(225,19,131,0.04));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 20px 40px rgba(225,19,131,0.15); }
+        .card:hover::before { opacity: 1; }
+
+        .card-img-wrapper {
+            width: 100%;
+            height: 170px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            margin-bottom: 16px;
+            background: var(--cream);
+        }
+
+        .card img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .card:hover img { transform: scale(1.08); }
+
+        .card h3 {
+            font-family: 'Titan One', cursive;
+            color: var(--brown);
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+
+        .card .price-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--orange), var(--pink));
+            color: white;
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 4px 14px;
+            border-radius: 50px;
+            margin-top: 6px;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            background: #1a1010;
+            color: #ccc;
+            padding: 0;
+            margin-top: 60px;
+            position: relative;
+        }
+
+        .footer-top-banner {
+            background: linear-gradient(135deg, var(--orange), var(--pink));
+            padding: 28px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .footer-banner-text h3 {
+            font-family: 'Titan One', cursive;
+            font-size: 1.6rem;
+            color: white;
+            letter-spacing: 0.5px;
+        }
+
+        .footer-banner-text p {
+            color: rgba(255,255,255,0.85);
+            font-size: 0.95rem;
+            margin-top: 4px;
+        }
+
+        .footer-newsletter {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .footer-newsletter input {
+            padding: 12px 18px;
+            border-radius: 50px;
+            border: none;
+            font-size: 0.9rem;
+            width: 240px;
+            outline: none;
+            background: rgba(255,255,255,0.95);
+            color: #333;
+        }
+
+        .footer-newsletter input::placeholder { color: #aaa; }
+
+        .footer-newsletter button {
+            padding: 12px 26px;
+            border-radius: 50px;
+            border: 2px solid white;
+            background: transparent;
+            color: white;
+            font-family: 'Titan One', cursive;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .footer-newsletter button:hover { background: white; color: var(--orange); }
+
+        .footer-main {
+            padding: 56px 40px 36px;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 48px;
+        }
+
+        .footer-brand-logo {
+            font-family: 'Dunkin', 'Titan One', cursive;
+            font-size: 2.2rem;
+            color: var(--orange);
+            margin-bottom: 12px;
+        }
+
+        .footer-brand-logo span { color: var(--pink); }
+
+        .footer-brand p {
+            font-size: 0.9rem;
+            line-height: 1.75;
+            color: #888;
+            max-width: 260px;
+            margin-bottom: 24px;
+        }
+
+        .footer-social-title {
+            font-size: 0.72rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .footer-social-icons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .footer-social-icons a {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .footer-social-icons a:hover {
+            background: linear-gradient(135deg, var(--orange), var(--pink));
+            border-color: transparent;
+            transform: translateY(-4px);
+            box-shadow: 0 6px 16px rgba(225,19,131,0.3);
+        }
+
+        .footer-social-icons a img {
+            width: 50%; height: 50%;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+            opacity: 0.7;
+        }
+
+        .footer-social-icons a:hover img { opacity: 1; }
+
+        .footer-col h4 {
+            font-family: 'Titan One', cursive;
+            font-size: 1rem;
+            color: var(--orange);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-col h4::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 30px; height: 2px;
+            background: linear-gradient(90deg, var(--orange), var(--pink));
+            border-radius: 99px;
+        }
+
+        .footer-col ul { list-style: none; }
+
+        .footer-col ul li { margin-bottom: 10px; }
+
+        .footer-col ul li a {
+            color: #888;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.25s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .footer-col ul li a::before {
+            content: '›';
+            color: var(--orange);
+            font-weight: 700;
+            opacity: 0;
+            transform: translateX(-6px);
+            transition: all 0.25s;
+        }
+
+        .footer-col ul li a:hover { color: white; padding-left: 8px; }
+        .footer-col ul li a:hover::before { opacity: 1; transform: translateX(0); }
+
+        .footer-divider {
+            border: none;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            margin: 0 40px;
+        }
+
+        .footer-payments {
+            padding: 24px 40px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .footer-payments-label {
+            font-size: 0.72rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #555;
+            margin-right: 6px;
+        }
+
+        .payment-icon {
+            width: 48px; height: 30px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s;
+        }
+
+        .payment-icon:hover {
+            background: rgba(255,255,255,0.14);
+            border-color: var(--orange);
+            transform: translateY(-3px);
+        }
+
+        .payment-icon img { width: 70%; height: 70%; object-fit: contain; }
 
         .footer-bottom {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-            text-align: center;
-            font-weight: 700;
-            color: var(--brown);
+            padding: 20px 40px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
         }
+
+        .footer-bottom p {
+            font-size: 0.82rem;
+            color: #555;
+        }
+
+        .footer-bottom-links {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .footer-bottom-links a {
+            font-size: 0.82rem;
+            color: #555;
+            text-decoration: none;
+            transition: color 0.25s;
+        }
+
+        .footer-bottom-links a:hover { color: var(--orange); }
+
+        .footer-heart {
+            font-size: 0.82rem;
+            color: #555;
+        }
+
+        .footer-heart span { color: var(--pink); }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar-banner {
+            position: fixed;
+            right: 0; top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(180deg, var(--orange), var(--pink));
+            color: white;
+            padding: 48px 14px;
+            writing-mode: vertical-rl;
+            letter-spacing: 3px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            border-radius: 14px 0 0 14px;
+            cursor: pointer;
+            z-index: 800;
+            box-shadow: -4px 0 20px rgba(225,19,131,0.25);
+            transition: all 0.3s;
+        }
+
+        .sidebar-banner:hover {
+            padding-right: 20px;
+            box-shadow: -8px 0 30px rgba(225,19,131,0.35);
+        }
+
+        /* ===== MODALS ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(10,5,5,0.7);
+            backdrop-filter: blur(5px);
+            padding-top: 60px;
+            overflow: auto;
+        }
+
+        .modal-content {
+            background: #fff;
+            margin: 5% auto;
+            padding: 40px;
+            border-radius: var(--radius-xl);
+            width: 88%;
+            max-width: 680px;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+            position: relative;
+            animation: modalIn 0.4s cubic-bezier(.34,1.56,.64,1);
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.88) translateY(30px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-content h2 {
+            font-family: 'Titan One', cursive;
+            color: var(--orange);
+            font-size: 1.8rem;
+            margin-bottom: 18px;
+        }
+
+        .modal-content p { color: #444; font-size: 0.95rem; line-height: 1.7; margin-bottom: 14px; }
+
+        .modal-content ul { padding-left: 20px; color: #666; }
+
+        .modal-content ul li { margin-bottom: 10px; font-size: 0.9rem; line-height: 1.6; }
+
+        .close {
+            position: absolute;
+            top: 18px; right: 22px;
+            color: #ccc;
+            font-size: 28px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: color 0.2s, transform 0.2s;
+            line-height: 1;
+        }
+
+        .close:hover { color: var(--pink); transform: rotate(90deg) scale(1.1); }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1100px) {
+            .footer-main { grid-template-columns: 1fr 1fr; }
+            .footer-brand { grid-column: span 2; }
+        }
+
+        @media (max-width: 768px) {
+            .main-header { padding: 0 16px; }
+            .nav-menu { display: none; }
+            .logo-titulo { width: 140px; }
+            .hero { margin: 20px 4%; padding: 40px 5%; }
+            .custom-section, .products { margin: 20px 4%; padding: 36px 20px; }
+            .footer-main { grid-template-columns: 1fr; padding: 36px 24px 24px; }
+            .footer-brand { grid-column: span 1; }
+            .footer-top-banner { padding: 24px 20px; }
+            .footer-bottom { padding: 18px 24px; flex-direction: column; text-align: center; }
+            .footer-payments { padding: 16px 24px; justify-content: center; }
+            .footer-divider { margin: 0 24px; }
+            .sidebar-banner { display: none; }
+        }
+
+        @media (max-width: 480px) {
+            .icons-right { gap: 8px; }
+            .icon-btn { width: 48px; height: 48px; }
+            .icon-wrapper .material-icons { font-size: 22px; }
+            .icon-label { display: none; }
+            .footer-newsletter input { width: 190px; }
+        }
+
+.toast-msg {
+    position: fixed;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2c2c2c;
+    color: #fff0e0;
+    padding: 12px 28px;
+    border-radius: 80px;
+    font-weight: bold;
+    z-index: 12000;
+    backdrop-filter: blur(8px);
+    font-size: 0.9rem;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+    animation: fadeToast 2.5s forwards;
+    white-space: nowrap;
+    font-family: 'Open Sans', sans-serif;
+}
+
+@keyframes fadeToast {
+    0%   { opacity: 0; bottom: 0px; }
+    15%  { opacity: 1; bottom: 30px; }
+    85%  { opacity: 1; bottom: 30px; }
+    100% { opacity: 0; bottom: -30px; display: none; }
+}
+
     </style>
 </head>
 <body>
 
-    <header class="main-header">
-        <div class="logo-titulo">
-            <!-- Logo con el tamaño exacto de 130px del código 1 -->
-            <img src="https://upload.wikimedia.org/wikipedia/en/thumb/d/d3/Dunkin%27_Donuts_logo.svg/1200px-Dunkin%27_Donuts_logo.svg.png" alt="Dunkin Logo">
+<!-- ===== SPLASH SCREEN ===== -->
+<div id="splash">
+    <div class="splash-logo">DUNKIN'<span>'</span></div>
+    <div class="splash-donuts">
+        <span>🍩</span><span>☕</span><span>🧁</span>
+    </div>
+    <div class="splash-tagline">America Runs on Dunkin'</div>
+    <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+</div>
+
+<!-- ===== FALLING DONUTS ===== -->
+<div id="falling-container"></div>
+
+<!-- ===== SIDEBAR ===== -->
+<div class="sidebar-banner">¡ORDENA YA!</div>
+
+<!-- ===== HEADER ===== -->
+<header class="main-header">
+    <div class="logo-titulo">
+        <img src="C:\Users\manuela\OneDrive\Desktop\DUNKIN\logo1.jpg" alt="Dunkin' Logo">
+    </div>
+    <ul class="nav-menu">
+        <li><a href="file:///C:/Users/manuela/OneDrive/Desktop/DUNKIN/index.html#payments">INICIO</a></li>
+        <li><a href="file:///C:/Users/manuela/OneDrive/Desktop/DUNKIN/PRODUCTOSdunk.html">MENÚ</a></li>
+        <li><a href="file:///C:/Users/manuela/OneDrive/Desktop/DUNKIN/delibery.html">DELIVERY</a></li>
+        <li><a href="file:///C:/Users/manuela/OneDrive/Desktop/DUNKIN/Blog.html">BLOG</a></li>
+    </ul>
+    <div class="icons-right">
+        <button class="icon-btn cart-icon" title="Carrito">
+            <span class="icon-wrapper"><span class="material-icons">shopping_cart</span></span>
+            <span class="icon-label">Carrito</span>
+        </button>
+        <a href="file:///C:/Users/manuela/OneDrive/Desktop/DUNKIN/ubicacion.html" class="icon-btn location-icon" title="Ubicación">
+            <span class="icon-wrapper"><span class="material-icons">location_on</span></span>
+            <span class="icon-label">Zona</span>
+        </a>
+        <button class="icon-btn favorites-icon" title="Favoritos">
+            <span class="icon-wrapper"><span class="material-icons">favorite</span></span>
+            <span class="icon-label">Liked</span>
+        </button>
+        <a href="file:///C:/Users/manuela/OneDrive/Desktop/DUNKIN/contacto.html" class="icon-btn support-icon" title="Soporte">
+            <span class="icon-wrapper"><span class="material-icons">support_agent</span></span>
+            <span class="icon-label">Ayuda</span>
+        </a>
+    </div>
+</header>
+
+<!-- ===== HERO ===== -->
+<section class="hero reveal">
+    <div class="hero-text">
+        <h1>AMAMOS<br><span>EL CAFÉ</span></h1>
+        <p>Ven y deleitate con las donas mas frecas del mundo.</p>
+        <a href="file:///C:/Users/manuela/OneDrive/Desktop/DUNKIN/PRODUCTOSdunk.html" class="btn-order">Ver Menú 🍩</a>
+    </div>
+    <div class="hero-img">
+        <img src="C:\Users\manuela\OneDrive\Desktop\DUNKIN\promo.jpg" alt="Dona Hero">
+    </div>
+</section>
+
+<!-- ===== PERSONALIZADOR ===== -->
+<section class="custom-section reveal">
+    <h2>¡GLASEA TU DONA!</h2>
+    <p class="subtitle">Elige tu sabor favorito</p>
+    <div class="custom-container">
+        <div class="color-options">
+            <button class="color-btn btn-pink"      onclick="changeDonut('fresa')">🍓 Fresa</button>
+            <button class="color-btn btn-chocolate" onclick="changeDonut('chocolate')">🍫 Chocolate</button>
+            <button class="color-btn btn-maple"     onclick="changeDonut('vainilla')">🍦 Vainilla</button>
+            <button class="color-btn btn-coco"      onclick="changeDonut('coco')">🥥 Coco</button>
+            <button class="color-btn btn-pistacho"  onclick="changeDonut('pistacho')">🌿 Pistacho</button>
+            <button class="color-btn btn-caramelo"  onclick="changeDonut('caramelo')">🍮 Caramelo</button>
+            <button class="color-btn btn-arandano"  onclick="changeDonut('arandano')"> Arándano</button>
+            <button class="color-btn btn-oreo"      onclick="changeDonut('oreo')">🖤 Oreo</button>
+            <button class="color-btn btn-limon"     onclick="changeDonut('limon')">🍋 Limón</button>
+            <button class="color-btn btn-glaseada"  onclick="changeDonut('glaseada')">⭐ Glaseada</button>
         </div>
-
-        <ul class="nav-menu">
-            <li><a href="#">Inicio</a></li>
-            <li><a href="#">Menú</a></li>
-            <li><a href="#">Tiendas</a></li>
-        </ul>
-
-        <div class="icons-right">
-            <a href="#" class="icon-btn">
-                <div class="icon-wrapper"><span class="material-icons">shopping_bag</span></div>
-                <span class="icon-label">Carrito</span>
-            </a>
-            <a href="#" class="icon-btn">
-                <div class="icon-wrapper"><span class="material-icons">location_on</span></div>
-                <span class="icon-label">RD</span>
-            </a>
+        <div class="donut-stage">
+            <div class="donut-ring"></div>
+            <img id="donut-display" src="ole1.png" alt="Personalizador de dona">
         </div>
-    </header>
+    </div>
+</section>
 
-    <main class="map-section">
-        <h1>Dunkin' <span>RD</span></h1>
-        <p style="font-family: 'Dancing Script', cursive; font-size: 1.8rem; color: var(--brown);">Encuentra tu rincón favorito</p>
+<!-- ===== PRODUCTOS ===== -->
+<section class="products reveal">
+    <h2>Favoritos de Temporada</h2>
+    <p class="section-sub">Lo más pedido esta semana</p>
+    <div class="grid">
+        <div class="card">
+            <div class="card-img-wrapper">
+                <img src="descarga (3).jpg" alt="Dona Glaseada">
+            </div>
+            <h3>Glaseada</h3>
+            <span class="price-tag">RD$120</span>
+        </div>
+        <div class="card">
+            <div class="card-img-wrapper">
+                <img src="aei.jpg" alt="Iced Coffee">
+            </div>
+            <h3>Iced Coffee</h3>
+            <span class="price-tag">RD$180</span>
+        </div>
+        <div class="card">
+            <div class="card-img-wrapper">
+                <img src="Blog.jpg" alt="Munchkins">
+            </div>
+            <h3>Munchkins</h3>
+            <span class="price-tag">RD$95</span>
+        </div>
+    </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer" id="payments">
+
+    <!-- Banner newsletter -->
+   <div class="footer-top-banner">
+    <div class="footer-banner-text">
+        <h3>🍩 Recibe ofertas exclusivas</h3>
+        <p>Suscríbete y obtén un 10% en tu primer pedido</p>
+    </div>
+    <div class="footer-newsletter">
+        <input type="email" placeholder="Tu correo electrónico" id="subsEmail">
+        <button id="subscribeBtn">Suscribirme</button>
+    </div>
+</div>
+
+
+<script>
+// ===== SUSCRIPCIÓN FUNCIONAL - CORREGIDA =====
+(function() {
+    // Esperar a que el DOM esté completamente cargado
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSubscribe);
+    } else {
+        initSubscribe();
+    }
+
+    function initSubscribe() {
+        // Buscar el botón y el input de diferentes formas posibles
+        const subscribeBtn = document.getElementById('subscribeBtn') || document.querySelector('.footer-newsletter button');
+        const emailInput = document.getElementById('subsEmail') || document.querySelector('.footer-newsletter input[type="email"]');
+
+        if (!subscribeBtn || !emailInput) {
+            console.error('No se encontraron los elementos de suscripción');
+            return;
+        }
+
+        // Agregar estilos para el toast si no existen
+        if (!document.querySelector('#toast-styles')) {
+            const style = document.createElement('style');
+            style.id = 'toast-styles';
+            style.textContent = `
+                .subscription-toast {
+                    position: fixed;
+                    bottom: 30px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: #1a1a1a;
+                    color: white;
+                    padding: 14px 28px;
+                    border-radius: 50px;
+                    font-family: 'Open Sans', sans-serif;
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                    z-index: 99999;
+                    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+                    animation: toastFadeInOut 3s ease forwards;
+                    white-space: nowrap;
+                    max-width: 90%;
+                    white-space: normal;
+                    text-align: center;
+                    line-height: 1.4;
+                }
+                .subscription-toast.success { background: #2e7d32; border-left: 4px solid #ffeb3b; }
+                .subscription-toast.error { background: #c62828; border-left: 4px solid #ffab40; }
+                @keyframes toastFadeInOut {
+                    0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+                    15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                    85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                    100% { opacity: 0; transform: translateX(-50%) translateY(-20px); visibility: hidden; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        function showToast(message, type = 'success') {
+            const existingToast = document.querySelector('.subscription-toast');
+            if (existingToast) existingToast.remove();
+
+            const toast = document.createElement('div');
+            toast.className = subscription-toast ${type};
+            toast.innerHTML = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                if (toast && toast.remove) toast.remove();
+            }, 3000);
+        }
+
+        // Función para guardar suscriptor
+        function saveSubscriber(email) {
+            let subscribers = JSON.parse(localStorage.getItem('dunkin_subscribers')) || [];
+            if (!subscribers.includes(email)) {
+                subscribers.push(email);
+                localStorage.setItem('dunkin_subscribers', JSON.stringify(subscribers));
+            }
+            return subscribers;
+        }
+
+        // Función principal
+        function handleSubscription() {
+            let email = emailInput.value.trim();
+
+            if (email === "") {
+                showToast("✉️ Por favor, ingresa tu correo electrónico", "error");
+                emailInput.style.border = "2px solid #c62828";
+                emailInput.focus();
+                setTimeout(() => { emailInput.style.border = ""; }, 2000);
+                return;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showToast("⚠️ Correo inválido. Ejemplo: nombre@dominio.com", "error");
+                emailInput.style.border = "2px solid #c62828";
+                emailInput.focus();
+                setTimeout(() => { emailInput.style.border = ""; }, 2000);
+                return;
+            }
+
+            // Guardar y mostrar éxito
+            const subscribers = saveSubscriber(email);
+            const nombre = email.split('@')[0];
+            
+            showToast(🎉 ¡Gracias ${nombre}! Revisa tu correo para tu 10% OFF., "success");
+            emailInput.value = '';
+            
+            // Limpiar borde si hay error previo
+            emailInput.style.border = "";
+            
+            // Mostrar en consola (para debug)
+            console.log(✅ Nuevo suscriptor: ${email} | Total: ${subscribers.length} suscriptores);
+        }
+
+        // Eventos
+        subscribeBtn.addEventListener('click', handleSubscription);
+        emailInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSubscription();
+            }
+        });
         
-        <!-- El mapa interactivo del código 2 -->
-        <div id="map"></div>
-    </main>
+        // Limpiar borde rojo al escribir
+        emailInput.addEventListener('input', function() {
+            this.style.border = "";
+        });
+    }
+})();
+</script>
 
-    <footer class="main-footer">
-        <div class="footer-grid">
-            <div class="footer-brand">
-                <h2>DUNKIN' <span>RD</span></h2>
-                <p>La frescura que te mueve, ahora en todo el mapa.</p>
-            </div>
-            <div class="footer-links">
-                <h4>Explora</h4>
-                <p>Nuestras Donas</p>
-                <p>Café y Bebidas</p>
-                <p>Promociones</p>
-            </div>
-            <div class="footer-links">
-                <h4>Contacto</h4>
-                <p>Servicio al cliente</p>
-                <p>Preguntas frecuentes</p>
+    
+    <!-- Columnas principales -->
+    <div class="footer-main">
+
+        <!-- Marca -->
+        <div class="footer-brand">
+            <div class="footer-brand-logo">DUNKIN'<span> ®️</span></div>
+            <p>La cadena de café y donas más amada del mundo, ahora en República Dominicana. Frescura, sabor y energía para tu día.</p>
+            <p class="footer-social-title">Síguenos</p>
+            <div class="footer-social-icons">
+                <a href="https://www.facebook.com/DunkinUS/" title="Facebook">
+                    <img src="https://img.ltwebstatic.com/images3_pi/2019/10/16/15711926635e270756e533339313caff986447bc64.webp" alt="Facebook">
+                </a>
+                <a href="https://www.instagram.com/dunkin/?hl=en" title="Instagram">
+                    <img src="https://img.ltwebstatic.com/images3_pi/2019/10/16/1571192668903669798a943c922b02580ebebc7b18.webp" alt="Instagram">
+                </a>
+                <a href="https://x.com/dunkindonuts?lang=en" title="X / Twitter">
+                    <img src="https://img.ltwebstatic.com/images3_pi/2019/10/16/157119268793f22c48eb2ec999ec8e9627baa4dbdc.webp" alt="X">
+                </a>
+                <a href="https://www.youtube.com/user/dunkindonuts#" title="YouTube">
+                    <img src="https://img.ltwebstatic.com/images3_pi/2019/10/16/15711927030daa46072147cc0454571b5a18f21e2a.webp" alt="YouTube">
+                </a>
+                <a href="https://www.snapchat.com/" title="Snapchat">
+                    <img src="https://img.ltwebstatic.com/images3_pi/2019/10/16/157119279245d4af0a75756207e9168db2131ccc3c.webp" alt="Snapchat">
+                </a>
+                <a href="https://www.tiktok.com/" title="TikTok">
+                    <img src="https://img.ltwebstatic.com/images3_acp/2020/05/04/1588585935ca4663feda01e6e34d87d0741d39b790.webp" alt="TikTok">
+                </a>
             </div>
         </div>
-        <div class="footer-bottom">
-            &copy; 2026 DUNKIN' DONUTS DOMINICANA. TODOS LOS DERECHOS RESERVADOS.
+
+        <!-- Empresa -->
+        <div class="footer-col">
+            <h4>Empresa</h4>
+            <ul>
+                <li><a href="file:///C:/Users/manuela/OneDrive/Desktop/DUNKIN/sobre%20nosotros.html#delivery">Sobre Nosotros</a></li>
+                <li><a href="file:///C:/Users/manuela/OneDrive/Desktop/DUNKIN/sobre%20nosotros.html#delivery">Nuestra Historia</a></li>
+                <li><a href="file:///C:/Users/manuela/OneDrive/Desktop/DUNKIN/ubicacion.html">Ubicación</a></li>
+                <li><a href="file:///C:/Users/manuela/OneDrive/Desktop/DUNKIN/Blog.html#snacks">Blog de Tendencias</a></li>
+            </ul>
         </div>
-    </footer>
 
-    <!-- Script para inicializar el mapa -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        // Inicializar mapa centrado en RD (Código 2)
-        const map = L.map('map').setView([18.4861, -69.9312], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        <!-- Ayuda -->
+        <div class="footer-col">
+            <h4>Ayuda</h4>
+            <ul>
+                <li><a href="#" onclick="showModal('shippingModal'); return false;">Información de Envío</a></li>
+                <li><a href="#" onclick="showModal('returnsModal'); return false;">Políticas de Devolución</a></li>
+                <li><a href="#" onclick="showModal('vipModal'); return false;">Programa VIP</a></li>
+                <li><a href="#payments">Métodos de Pago</a></li>
+            </ul>
+        </div>
 
-        // Ejemplo de marcador
-        L.marker([18.4861, -69.9312]).addTo(map)
-            .bindPopup('<b>Dunkin\' Donuts RD</b><br>¡Te esperamos!')
-            .openPopup();
-    </script>
+        <!-- Atención -->
+        <div class="footer-col">
+            <h4>Atención</h4>
+            <ul>
+                <li><a href="#" onclick="showModal('contactModal'); return false;">Contáctanos</a></li>
+                <li><a href="#" onclick="showModal('termsModal'); return false;">Términos y Condiciones</a></li>
+                <li><a href="#" onclick="showModal('privacyModal'); return false;">Privacidad</a></li>
+                <li><a href="#" onclick="showModal('faqModal'); return false;">Preguntas Frecuentes</a></li>
+            </ul>
+        </div>
+
+    </div>
+
+ 
+
+    <!-- Copyright -->
+    <div class="footer-bottom">
+        <p>©️ 2026 Dunkin' Donuts – República Dominicana. Todos los derechos reservados.</p>
+        <div class="footer-bottom-links">
+            <a href="#" onclick="showModal('privacyModal'); return false;">Privacidad</a>
+            <a href="#" onclick="showModal('cookiesModal'); return false;">Cookies</a>
+            <a href="#" onclick="showModal('termsModal'); return false;">Términos</a>
+        </div>
+        <p class="footer-heart">Hecho con <span>♥️</span> en RD</p>
+    </div>
+
+</footer>
+
+<!-- ===== MODALS ===== -->
+<div id="shippingModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="this.parentElement.parentElement.style.display='none'">&times;</span>
+        <h2>🚚 Información de Envío</h2>
+        <p>En Dunkin Donuts República Dominicana, ofrecemos envíos rápidos y seguros a todo el país. Los tiempos de entrega varían según la ubicación:</p>
+        <ul>
+            <li>Santo Domingo: 1-2 días hábiles.</li>
+            <li>Otras provincias: 3-5 días hábiles.</li>
+            <li>Costo de envío: RD$200 para pedidos menores a RD$1,000; gratis para pedidos superiores.</li>
+            <li>Usamos servicios como Metro Pak y Caribe Pack para garantizar la frescura de tus donas y café.</li>
+        </ul>
+        <p>Para más detalles, contáctanos al (809) 555-1234.</p>
+    </div>
+</div>
+
+<div id="returnsModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="this.parentElement.parentElement.style.display='none'">&times;</span>
+        <h2>↩️ Políticas de Devolución</h2>
+        <p>En Dunkin Donuts RD, tu satisfacción es nuestra prioridad. Puedes devolver productos no perecederos dentro de 7 días si están en su empaque original.</p>
+        <ul>
+            <li>Para alimentos frescos, solo aceptamos devoluciones si hay error en el pedido.</li>
+            <li>Proceso: Envía un email a devoluciones@dunkinrd.com con tu número de pedido.</li>
+            <li>Reembolsos: Procesados en 5-10 días hábiles vía el método original de pago.</li>
+            <li>Excepciones: No se aceptan devoluciones en promociones o productos personalizados.</li>
+        </ul>
+    </div>
+</div>
+
+<div id="vipModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="this.parentElement.parentElement.style.display='none'">&times;</span>
+        <h2>⭐ Programa VIP</h2>
+        <p>Únete al Programa VIP de Dunkin Donuts RD y disfruta de beneficios exclusivos. Acumula puntos y canjéalos por donas gratis, descuentos y acceso a eventos.</p>
+        <ul>
+            <li>Registro: Gratis vía app o web.</li>
+            <li>Puntos: 1 punto por cada RD$100 gastados.</li>
+            <li>Niveles: Bronce, Plata y Oro con recompensas crecientes.</li>
+            <li>Beneficios: Cumpleaños gratis, ofertas semanales y más.</li>
+        </ul>
+    </div>
+</div>
+
+<div id="contactModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="this.parentElement.parentElement.style.display='none'">&times;</span>
+        <h2>📞 Contáctanos</h2>
+        <p>Estamos aquí para ayudarte. Puedes contactarnos a través de:</p>
+        <ul>
+            <li>Teléfono: (809) 555-1234 (Lunes a Viernes, 8am–6pm)</li>
+            <li>Email: soporte@dunkinrd.com</li>
+            <li>Dirección: Av. Winston Churchill #123, Santo Domingo, RD</li>
+            <li>Redes Sociales: @DunkinRD en Instagram y Facebook</li>
+        </ul>
+        <p>Envía tu mensaje y te responderemos en 24 horas.</p>
+    </div>
+</div>
+
+<div id="termsModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="this.parentElement.parentElement.style.display='none'">&times;</span>
+        <h2>📄 Términos y Condiciones</h2>
+        <p>Al usar los servicios de Dunkin Donuts República Dominicana, aceptas estos términos. Nos reservamos el derecho a modificar precios y productos sin aviso previo.</p>
+        <ul>
+            <li>Uso del sitio: Prohibido el uso comercial no autorizado.</li>
+            <li>Pagos: Aceptamos tarjetas y efectivo; transacciones seguras.</li>
+            <li>Responsabilidad: No nos responsabilizamos por daños indirectos.</li>
+            <li>Ley aplicable: Leyes de la República Dominicana.</li>
+        </ul>
+        <p>Última actualización: Enero 2026.</p>
+    </div>
+</div>
+
+<div id="privacyModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="this.parentElement.parentElement.style.display='none'">&times;</span>
+        <h2>🔒 Política de Privacidad</h2>
+        <p>En Dunkin Donuts RD, protegemos tu privacidad conforme a la Ley 172-13 de Protección de Datos Personales.</p>
+        <ul>
+            <li>Uso de datos: Para envíos, marketing (con consentimiento) y análisis.</li>
+            <li>Seguridad: Encriptación SSL; no compartimos datos sin tu permiso.</li>
+            <li>Derechos: Puedes acceder, rectificar o eliminar datos escribiendo a privacidad@dunkinrd.com.</li>
+            <li>Cookies: Usamos cookies para personalizar tu experiencia.</li>
+        </ul>
+        <p>Última actualización: Enero 2026.</p>
+    </div>
+</div>
+
+<div id="faqModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="this.parentElement.parentElement.style.display='none'">&times;</span>
+        <h2>❓ Preguntas Frecuentes</h2>
+        <ul>
+            <li>¿Cómo hago un pedido? Usa nuestra app o web para seleccionar y pagar.</li>
+            <li>¿Hay opciones sin gluten? Sí, consulta nuestro menú especial.</li>
+            <li>¿Qué pasa si mi pedido llega tarde? Ofrecemos compensación en puntos VIP.</li>
+            <li>¿Puedo personalizar donas? Sí, en tiendas seleccionadas.</li>
+        </ul>
+    </div>
+</div>
+
+<div id="cookiesModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="this.parentElement.parentElement.style.display='none'">&times;</span>
+        <h2>🍪 Política de Cookies</h2>
+        <p>Dunkin Donuts RD usa cookies para mejorar tu experiencia en el sitio.</p>
+        <ul>
+            <li>Tipos: Cookies de sesión (temporales) y persistentes (guardadas).</li>
+            <li>Gestión: Puedes configurar tu navegador para bloquearlas.</li>
+            <li>Terceros: Usamos Google Analytics para datos anónimos.</li>
+            <li>Consentimiento: Al continuar navegando, aceptas nuestro uso de cookies.</li>
+        </ul>
+        <p>Última actualización: Enero 2026.</p>
+    </div>
+</div>
+
+<!-- ===== SCRIPTS ===== -->
+<script>
+    /* --- SPLASH SCREEN --- */
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            document.getElementById('splash').classList.add('hide');
+            setTimeout(() => {
+                document.getElementById('splash').style.display = 'none';
+            }, 750);
+        }, 2700);
+    });
+
+    /* --- DONUTS CAYENDO --- */
+    function createDonut() {
+        const container = document.getElementById('falling-container');
+        const el = document.createElement('div');
+        const items = ['🍩','☕','🧁','🍫'];
+        el.innerText = items[Math.floor(Math.random() * items.length)];
+        el.classList.add('falling-donut');
+        el.style.left = Math.random() * 100 + 'vw';
+        el.style.fontSize = (Math.random() * 18 + 16) + 'px';
+        const dur = Math.random() * 3 + 4;
+        el.style.animationDuration = dur + 's';
+        container.appendChild(el);
+        setTimeout(() => el.remove(), dur * 1000);
+    }
+    setInterval(createDonut, 700);
+
+    /* --- CHISPAS --- */
+    document.addEventListener('mousemove', (e) => {
+        if (Math.random() < 0.08) {
+            const s = document.createElement('div');
+            s.classList.add('sprinkle');
+            const colors = ['#FF6719','#E11383','#FFD700','#fff'];
+            s.style.background = colors[Math.floor(Math.random() * colors.length)];
+            s.style.left = e.clientX + 'px';
+            s.style.top  = e.clientY + 'px';
+            s.style.setProperty('--mdx', (Math.random()*100 - 50)+'px');
+            s.style.setProperty('--mdy', (Math.random()*100 - 50)+'px');
+            document.body.appendChild(s);
+            setTimeout(() => s.remove(), 900);
+        }
+    });
+
+    /* --- REVEAL SCROLL --- */
+    function revealOnScroll() {
+        document.querySelectorAll('.reveal').forEach(el => {
+            if (el.getBoundingClientRect().top < window.innerHeight - 60) {
+                el.classList.add('active');
+            }
+        });
+    }
+    window.addEventListener('scroll', revealOnScroll);
+    revealOnScroll();
+
+    /* --- PERSONALIZADOR --- */
+    function changeDonut(tipo) {
+        const d = document.getElementById('donut-display');
+        d.style.transform = 'scale(0.75) rotate(-10deg)';
+        d.style.opacity = '0.5';
+        const map = {
+            fresa:     'oo1.png',
+            chocolate: 'qqqq1.png',
+            vainilla:  'h1.png',
+            coco:      'coco1.png',
+            pistacho:  'i1.png',
+            caramelo:  'caramelo1.png',
+            arandano:  'blue1.png',
+            oreo:      'oreo1.png',
+            limon:     'limo1.png',
+            glaseada:  'gla1.png',
+        };
+        setTimeout(() => {
+            d.src = map[tipo] || 'ole1.png';
+            d.style.transform = 'scale(1) rotate(0deg)';
+            d.style.opacity = '1';
+        }, 220);
+    }
+
+    /* --- MODALS --- */
+    function showModal(id) {
+        const m = document.getElementById(id);
+        if (m) m.style.display = 'block';
+    }
+
+    document.querySelectorAll('.close').forEach(btn => {
+        btn.onclick = function() {
+            this.parentElement.parentElement.style.display = 'none';
+        };
+    });
+
+    window.onclick = function(e) {
+        if (e.target.classList.contains('modal')) e.target.style.display = 'none';
+    };
+</script>
 
 </body>
 </html>
