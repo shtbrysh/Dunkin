@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Dunkin' — Iniciar Sesión</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #3D1500;
+    font-family: 'Nunito', sans-serif;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Blobs de fondo */
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(70px);
+  }
+  .b1 { width: 420px; height: 420px; background: #FF6E1A; opacity: .13; top: -100px; right: -100px; }
+  .b2 { width: 320px; height: 320px; background: #E8347A; opacity: .11; bottom: -80px; left: -80px; }
+  .b3 { width: 200px; height: 200px; background: #FF8C47; opacity: .08; top: 50%; left: 50%; transform: translate(-50%,-50%); }
+
+  /* Puntos de fondo */
+  .dots-bg {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(255,110,26,.07) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  /* Tarjeta principal */
+  .card {
+    position: relative;
+    z-index: 2;
+    background: #fff;
+    border-radius: 22px;
+    width: 400px;
+    max-width: 95vw;
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(0,0,0,.45), 0 0 0 1px rgba(255,110,26,.15);
+    animation: cardIn .5s cubic-bezier(.22,1,.36,1) both;
+  }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(30px) scale(.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* Header naranja-rosa */
+  .card-top {
+    background: linear-gradient(150deg, #FF6E1A 0%, #E8347A 100%);
+    padding: 32px 28px 28px;
+    text-align: center;
+    position: relative;
+  }
+  .card-top::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0; right: 0;
+    height: 32px;
+    background: #fff;
+    border-radius: 60% 60% 0 0 / 100% 100% 0 0;
+  }
+
+  /* Donut animado */
+  .donut-wrap {
+    width: 76px;
+    height: 76px;
+    margin: 0 auto 12px;
+    animation: floatUp 3s ease-in-out infinite;
+  }
+  @keyframes floatUp {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-7px); }
+  }
+  .donut-wrap svg { width: 100%; height: 100%; }
+
+  .brand-name {
+    font-size: 28px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -.5px;
+    line-height: 1;
+  }
+  .brand-name span { color: rgba(255,255,255,.6); }
+  .brand-sub {
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,.6);
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* Cuerpo del formulario */
+  .card-body { padding: 26px 30px 32px; }
+
+  .form-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: #1C0800;
+    text-align: center;
+    margin-bottom: 22px;
+  }
+
+  /* Error */
+  .err-box {
+    background: #FEE2E2;
+    border: 1.5px solid rgba(220,38,38,.25);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #991B1B;
+    text-align: center;
+    margin-bottom: 16px;
+    display: none;
+    animation: shake .35s ease;
+  }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25%      { transform: translateX(-7px); }
+    75%      { transform: translateX(7px); }
+  }
+
+  /* Campos */
+  .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+  .field label {
+    font-size: 10px;
+    font-weight: 800;
+    color: #7A4020;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+  }
+  .field-wrap { position: relative; }
+  .field-ico {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #C09070;
+    font-size: 17px;
+    pointer-events: none;
+  }
+  .field input {
+    width: 100%;
+    background: #FFF5EE;
+    border: 2px solid #FFD5B0;
+    color: #1C0800;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 12px 12px 12px 40px;
+    border-radius: 11px;
+    outline: none;
+    transition: border-color .15s, background .15s, box-shadow .15s;
+  }
+  .field input:focus {
+    border-color: #FF6E1A;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(255,110,26,.13);
+  }
+  .field input::placeholder { color: #C09880; }
+
+  /* Chips de acceso rápido */
+  .quick-box {
+    background: #FFF5EE;
+    border: 1.5px dashed #FFD5B0;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+  }
+  .quick-label {
+    font-size: 10px;
+    font-weight: 800;
+    color: #B87050;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .quick-chips { display: flex; gap: 7px; flex-wrap: wrap; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #fff;
+    border: 1.5px solid #FFD5B0;
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #7A4020;
+    cursor: pointer;
+    transition: all .15s;
+    font-family: 'Nunito', sans-serif;
+  }
+  .chip:hover { border-color: #FF6E1A; color: #FF6E1A; background: #FFF0E6; }
+  .chip i { font-size: 13px; }
+
+  /* Botón principal */
+  .btn-login {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #FF6E1A 0%, #E8347A 100%);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+    box-shadow: 0 4px 20px rgba(255,110,26,.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: .2px;
+  }
+  .btn-login:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(255,110,26,.52); }
+  .btn-login:active { transform: scale(.98); }
+  .btn-login.loading { opacity: .72; pointer-events: none; }
+  .btn-login i { font-size: 18px; }
+
+  /* Spinner */
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2.5px solid rgba(255,255,255,.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Pantalla de éxito ── */
+  .success-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 34px 30px 36px;
+    text-align: center;
+    animation: fadeIn .4s ease both;
+  }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+  .success-circle {
+    width: 70px; height: 70px;
+    background: linear-gradient(135deg, #FF6E1A, #E8347A);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 28px rgba(255,110,26,.4);
+    animation: popIn .45s cubic-bezier(.22,1,.36,1) both;
+  }
+  @keyframes popIn {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+  .success-circle i { font-size: 34px; color: #fff; }
+
+  .s-name { font-size: 22px; font-weight: 900; color: #1C0800; margin-bottom: 3px; }
+  .s-role { font-size: 13px; font-weight: 600; color: #B87050; margin-bottom: 18px; }
+
+  .online-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #E3F9EE;
+    color: #0F6E56;
+    border: 1.5px solid rgba(15,110,86,.2);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 12px;
+    font-weight: 800;
+    margin-bottom: 22px;
+  }
+  .online-dot {
+    width: 7px; height: 7px;
+    background: #1D9E75;
+    border-radius: 50%;
+    animation: blink 1.4s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+  /* Info grid */
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 22px;
+  }
+  .info-cell {
+    background: #FFF5EE;
+    border: 1.5px solid #FFD5B0;
+    border-radius: 11px;
+    padding: 10px 13px;
+    text-align: left;
+  }
+  .info-cell-lbl { font-size: 9px; font-weight: 800; color: #B87050; letter-spacing: .7px; text-transform: uppercase; margin-bottom: 3px; }
+  .info-cell-val { font-size: 13px; font-weight: 800; color: #1C0800; }
+
+  /* Botón dashboard */
+  .btn-dash {
+    width: 100%;
+    padding: 13px;
+    background: #FF6E1A;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all .15s;
+    box-shadow: 0 4px 16px rgba(255,110,26,.38);
+  }
+  .btn-dash:hover { background: #e85e0e; box-shadow: 0 7px 22px rgba(255,110,26,.48); transform: translateY(-1px); }
+  .btn-dash:active { transform: scale(.98); }
+  .btn-dash i { font-size: 18px; }
+
+  /* Footer */
+  .card-foot {
+    text-align: center;
+    padding: 0 30px 18px;
+    font-size: 11px;
+    color: #C09070;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<div class="blob b3"></div>
+<div class="dots-bg"></div>
+
+<div class="card" id="card">
+
+  <!-- HEADER -->
+  <div class="card-top">
+    <div class="donut-wrap">
+      <svg viewBox="0 0 76 76" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Cuerpo donut -->
+        <circle cx="38" cy="38" r="30" fill="rgba(255,255,255,.18)" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/>
+        <!-- Agujero -->
+        <circle cx="38" cy="38" r="14" fill="rgba(255,255,255,.0)" stroke="rgba(255,255,255,.25)" stroke-width="1"/>
+        <circle cx="38" cy="38" r="13" fill="#E8347A" opacity=".45"/>
+        <!-- Glaze brillante -->
+        <path d="M20 31 Q38 22 56 31" stroke="rgba(255,255,255,.5)" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <!-- Sprinkles -->
+        <rect x="20" y="19" width="6" height="2.2" rx="1.1" fill="#fff" opacity=".65" transform="rotate(-28 20 19)"/>
+        <rect x="48" y="15" width="6" height="2.2" rx="1.1" fill="#fff" opacity=".55" transform="rotate(22 48 15)"/>
+        <rect x="56" y="42" width="5" height="2" rx="1" fill="#fff" opacity=".6" transform="rotate(-18 56 42)"/>
+        <rect x="15" y="48" width="6" height="2.2" rx="1.1" fill="#fff" opacity=".5" transform="rotate(38 15 48)"/>
+        <rect x="36" y="60" width="5" height="2" rx="1" fill="#fff" opacity=".65" transform="rotate(-8 36 60)"/>
+        <rect x="26" y="56" width="5" height="2" rx="1" fill="#fff" opacity=".45" transform="rotate(15 26 56)"/>
+      </svg>
+    </div>
+    <div class="brand-name">Dunkin<span>'</span></div>
+    <div class="brand-sub">Sistema de Gestión Pro</div>
+  </div>
+
+  <!-- FORMULARIO -->
+  <div id="form-section">
+    <div class="card-body">
+      <div class="form-title">Iniciar sesión</div>
+
+      <div class="err-box" id="err-box">
+        <i class="ti ti-alert-circle" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>
+        Usuario o contraseña incorrectos
+      </div>
+
+      <div class="field">
+        <label for="inp-user">Usuario</label>
+        <div class="field-wrap">
+          <i class="ti ti-user field-ico"></i>
+          <input type="text" id="inp-user" placeholder="Ingresa tu usuario" autocomplete="username">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="inp-pass">Contraseña</label>
+        <div class="field-wrap">
+          <i class="ti ti-lock field-ico"></i>
+          <input type="password" id="inp-pass" placeholder="••••••••" autocomplete="current-password">
+        </div>
+      </div>
+
+      <div class="quick-box">
+        <div class="quick-label">Accesos rápidos de prueba</div>
+        <div class="quick-chips">
+          <div class="chip" onclick="quick('admin','admin123')">
+            <i class="ti ti-shield-check"></i> admin
+          </div>
+          <div class="chip" onclick="quick('cajero','caja123')">
+            <i class="ti ti-cash"></i> cajero
+          </div>
+          <div class="chip" onclick="quick('gerente','ger2025')">
+            <i class="ti ti-chart-bar"></i> gerente
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-login" id="btn-login" onclick="doLogin()">
+        <i class="ti ti-arrow-right"></i>
+        Entrar al sistema
+      </button>
+    </div>
+
+    <div class="card-foot">
+      Dunkin' Piantini &nbsp;·&nbsp; RD &nbsp;·&nbsp; v2.0
+    </div>
+  </div>
+
+  <!-- PANTALLA DE ÉXITO -->
+  <div class="success-screen" id="success-screen">
+    <div class="success-circle">
+      <i class="ti ti-check"></i>
+    </div>
+    <div class="s-name" id="s-name">Admin Dunkin</div>
+    <div class="s-role" id="s-role">Gerente General</div>
+    <div class="online-pill">
+      <div class="online-dot"></div>
+      Sesión activa
+    </div>
+    <div class="info-grid">
+      <div class="info-cell">
+        <div class="info-cell-lbl">Usuario</div>
+        <div class="info-cell-val" id="s-user">admin</div>
+      </div>
+      <div class="info-cell">
+        <div class="info-cell-lbl">Acceso</div>
+        <div class="info-cell-val" id="s-access">Total</div>
+      </div>
+      <div class="info-cell">
+        <div class="info-cell-lbl">Sucursal</div>
+        <div class="info-cell-val">Piantini RD</div>
+      </div>
+      <div class="info-cell">
+        <div class="info-cell-lbl">Hora entrada</div>
+        <div class="info-cell-val" id="s-time">--:--</div>
+      </div>
+    </div>
+    <button class="btn-dash" onclick="irDashboard()">
+      <i class="ti ti-layout-dashboard"></i>
+      Ir al Dashboard
+    </button>
+  </div>
+
+</div>
+
+<script>
+  // ── Usuarios del sistema ──
+  const USERS = [
+    { user: 'admin',   pass: 'admin123', nombre: 'Admin Dunkin',  rol: 'Gerente General',  access: 'Total',          perms: ['all'] },
+    { user: 'cajero',  pass: 'caja123',  nombre: 'Cajero #1',     rol: 'Cajero',            access: 'POS / Ventas',   perms: ['pos','facturas','clientes'] },
+    { user: 'gerente', pass: 'ger2025',  nombre: 'Gerente Área',  rol: 'Gerente de Área',   access: 'Reportes',       perms: ['reportes','productos','movimientos'] },
+  ];
+
+  // Guardar sesión en localStorage para que el sistema principal la lea
+  function saveSession(user) {
+    localStorage.setItem('dk_session', JSON.stringify({
+      ...user,
+      loginTime: new Date().toISOString(),
+    }));
+  }
+
+  function quick(u, p) {
+    document.getElementById('inp-user').value = u;
+    document.getElementById('inp-pass').value = p;
+    document.getElementById('inp-pass').focus();
+  }
+
+  function doLogin() {
+    const u   = document.getElementById('inp-user').value.trim();
+    const p   = document.getElementById('inp-pass').value;
+    const btn = document.getElementById('btn-login');
+    const err = document.getElementById('err-box');
+
+    if (!u || !p) {
+      err.style.display = 'block';
+      err.innerHTML = '<i class="ti ti-alert-circle" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>Completa usuario y contraseña';
+      return;
+    }
+
+    // Estado cargando
+    btn.classList.add('loading');
+    btn.innerHTML = '<div class="spinner"></div> Verificando…';
+    err.style.display = 'none';
+
+    setTimeout(() => {
+      const found = USERS.find(x => x.user === u && x.pass === p);
+
+      if (!found) {
+        btn.classList.remove('loading');
+        btn.innerHTML = '<i class="ti ti-arrow-right"></i> Entrar al sistema';
+        err.style.display = 'block';
+        err.innerHTML = '<i class="ti ti-alert-circle" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>Usuario o contraseña incorrectos';
+        document.getElementById('inp-pass').value = '';
+        document.getElementById('inp-pass').focus();
+        return;
+      }
+
+      // Guardar sesión
+      saveSession(found);
+
+      // Mostrar hora actual
+      const now  = new Date();
+      const hora = now.toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+      // Llenar datos de éxito
+      document.getElementById('s-name').textContent   = found.nombre;
+      document.getElementById('s-role').textContent   = found.rol;
+      document.getElementById('s-user').textContent   = found.user;
+      document.getElementById('s-access').textContent = found.access;
+      document.getElementById('s-time').textContent   = hora;
+
+      // Transición a pantalla de éxito
+      document.getElementById('form-section').style.display = 'none';
+      const ss = document.getElementById('success-screen');
+      ss.style.display = 'flex';
+
+    }, 950);
+  }
+
+  function irDashboard() {
+    // Si el sistema principal está en otro archivo, redirige así:
+    // window.location.href = 'dunkin-pro.html';
+
+    // Por ahora muestra mensaje de redirección
+    const btn = document.querySelector('.btn-dash');
+    btn.innerHTML = '<div class="spinner"></div> Cargando…';
+    btn.style.pointerEvents = 'none';
+
+    setTimeout(() => {
+      alert('✅ Sesión guardada en localStorage.\n\nIntegra este login con dunkin-pro.html y el sistema detectará la sesión automáticamente.\n\nUsuario: ' + (JSON.parse(localStorage.getItem("dk_session"))?.nombre || ''));
+      btn.innerHTML = '<i class="ti ti-layout-dashboard"></i> Ir al Dashboard';
+      btn.style.pointerEvents = '';
+    }, 800);
+  }
+
+  // Enter para login
+  document.getElementById('inp-pass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+  document.getElementById('inp-user').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('inp-pass').focus();
+  });
+</script>
+
+</body>
+</html>

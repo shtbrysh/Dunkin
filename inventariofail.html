@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Inventario</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f11;
+    --surface: #18181c;
+    --surface2: #222228;
+    --surface3: #2a2a32;
+    --accent: #7c6dfa;
+    --accent2: #a594ff;
+    --accent-dim: rgba(124,109,250,0.15);
+    --green: #22d07a;
+    --green-dim: rgba(34,208,122,0.12);
+    --red: #ff5757;
+    --red-dim: rgba(255,87,87,0.12);
+    --amber: #ffb347;
+    --amber-dim: rgba(255,179,71,0.12);
+    --text: #f0eeff;
+    --text2: #9691b0;
+    --text3: #5c5878;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(124,109,250,0.3);
+    --radius: 10px;
+    --radius-lg: 16px;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    min-height: 100vh;
+    display: flex;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 220px;
+    min-height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  .sidebar-logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-logo h1 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -.3px;
+  }
+  .sidebar-logo span {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--mono);
+  }
+  .sidebar-nav {
+    padding: 12px 10px;
+    flex: 1;
+  }
+  .nav-label {
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 1.5px;
+    padding: 8px 10px 4px;
+    font-family: var(--mono);
+  }
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 12px;
+    border: none;
+    background: none;
+    color: var(--text2);
+    font-family: var(--sans);
+    font-size: 13px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all .15s;
+    text-align: left;
+  }
+  .nav-btn:hover { background: var(--surface2); color: var(--text); }
+  .nav-btn.active { background: var(--accent-dim); color: var(--accent2); }
+  .nav-icon { font-size: 15px; width: 18px; text-align: center; }
+
+  /* Main */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .topbar {
+    height: 56px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+  }
+  .topbar-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    flex: 1;
+  }
+  .search-box {
+    display: flex;
+    align-items: center;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 12px;
+    gap: 8px;
+    width: 220px;
+  }
+  .search-box input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    width: 100%;
+    padding: 7px 0;
+  }
+  .search-box input::placeholder { color: var(--text3); }
+
+  .content { flex: 1; overflow-y: auto; padding: 24px; }
+
+  /* Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .stat-label { font-size: 11px; color: var(--text3); font-family: var(--mono); letter-spacing: .5px; }
+  .stat-value { font-size: 26px; font-weight: 700; color: var(--text); line-height: 1; }
+  .stat-sub { font-size: 11px; color: var(--text2); }
+  .stat-card.green { border-color: rgba(34,208,122,.2); }
+  .stat-card.green .stat-value { color: var(--green); }
+  .stat-card.red { border-color: rgba(255,87,87,.2); }
+  .stat-card.red .stat-value { color: var(--red); }
+  .stat-card.amber { border-color: rgba(255,179,71,.2); }
+  .stat-card.amber .stat-value { color: var(--amber); }
+
+  /* Table section */
+  .table-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .table-header {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+  .table-header h2 { font-size: 14px; font-weight: 700; flex: 1; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .15s;
+    border: none;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-ghost { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--border2); }
+  .btn-danger { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,87,87,.2); }
+  .btn-danger:hover { background: rgba(255,87,87,.22); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* Filter bar */
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .filter-bar select, .filter-bar input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 7px;
+    outline: none;
+  }
+  .filter-bar select:focus, .filter-bar input:focus { border-color: var(--border2); }
+  .filter-bar label { font-size: 12px; color: var(--text2); }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    text-align: left;
+    padding: 11px 16px;
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--mono);
+    letter-spacing: .8px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  thead th:hover { color: var(--text2); }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody tr:last-child { border-bottom: none; }
+  td { padding: 12px 16px; font-size: 13px; }
+  td.mono { font-family: var(--mono); font-size: 12px; color: var(--text2); }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    font-family: var(--mono);
+  }
+  .badge-green { background: var(--green-dim); color: var(--green); }
+  .badge-red { background: var(--red-dim); color: var(--red); }
+  .badge-amber { background: var(--amber-dim); color: var(--amber); }
+  .badge-purple { background: var(--accent-dim); color: var(--accent2); }
+
+  /* Stock indicator */
+  .stock-bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .stock-bar { width: 60px; height: 4px; background: var(--surface3); border-radius: 2px; overflow: hidden; }
+  .stock-fill { height: 100%; border-radius: 2px; transition: width .3s; }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.6);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-lg);
+    width: 480px;
+    max-width: 96vw;
+    padding: 28px;
+    animation: fadeUp .2s ease;
+  }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+  .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-grid.full { grid-template-columns: 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label { font-size: 11px; color: var(--text2); font-family: var(--mono); letter-spacing: .5px; }
+  .form-group input, .form-group select, .form-group textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--border2); }
+  .form-group textarea { resize: vertical; min-height: 70px; }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+
+  /* SQL Panel */
+  .sql-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin-top: 24px;
+    overflow: hidden;
+  }
+  .sql-header {
+    display: flex; align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    gap: 10px;
+  }
+  .sql-header h3 { font-size: 13px; font-weight: 700; flex: 1; color: var(--text2); font-family: var(--mono); }
+  .sql-body { padding: 16px 20px; }
+  .sql-tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+  .sql-tab {
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-family: var(--mono);
+    cursor: pointer;
+    background: var(--surface2);
+    color: var(--text2);
+    border: 1px solid var(--border);
+    transition: all .15s;
+  }
+  .sql-tab:hover { color: var(--text); }
+  .sql-tab.active { background: var(--accent-dim); color: var(--accent2); border-color: var(--border2); }
+  .sql-code {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #b8b0ff;
+    line-height: 1.7;
+    white-space: pre;
+    overflow-x: auto;
+  }
+  .sql-kw { color: var(--accent2); }
+  .sql-str { color: var(--green); }
+  .sql-num { color: var(--amber); }
+  .sql-cmt { color: var(--text3); }
+
+  /* Section pages */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* Empty state */
+  .empty {
+    text-align: center;
+    padding: 40px;
+    color: var(--text3);
+    font-size: 13px;
+  }
+
+  /* Pagination */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    gap: 6px;
+  }
+  .pag-btn {
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    cursor: pointer;
+  }
+  .pag-btn.active { background: var(--accent-dim); color: var(--accent2); border-color: var(--border2); }
+  .pag-info { font-size: 12px; color: var(--text3); font-family: var(--mono); margin-right: 8px; }
+
+  /* Toast */
+  .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 200; display: flex; flex-direction: column; gap: 8px; }
+  .toast {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 13px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideIn .2s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  }
+  .toast.success { border-color: rgba(34,208,122,.3); }
+  .toast.error { border-color: rgba(255,87,87,.3); }
+  @keyframes slideIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .sidebar { width: 52px; }
+    .sidebar-logo h1, .sidebar-logo span, .nav-btn span, .nav-label { display: none; }
+    .nav-btn { justify-content: center; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .form-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <h1>📦 InvSys</h1>
+    <span>v1.0.0</span>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-label">MENÚ</div>
+    <button class="nav-btn active" onclick="showPage('dashboard')">
+      <span class="nav-icon">⊞</span><span>Dashboard</span>
+    </button>
+    <button class="nav-btn" onclick="showPage('productos')">
+      <span class="nav-icon">◻</span><span>Productos</span>
+    </button>
+    <button class="nav-btn" onclick="showPage('categorias')">
+      <span class="nav-icon">⊟</span><span>Categorías</span>
+    </button>
+    <button class="nav-btn" onclick="showPage('movimientos')">
+      <span class="nav-icon">↕</span><span>Movimientos</span>
+    </button>
+    <div class="nav-label" style="margin-top:12px">CONFIG</div>
+    <button class="nav-btn" onclick="showPage('sql')">
+      <span class="nav-icon">⌗</span><span>SQL / BD</span>
+    </button>
+  </div>
+</nav>
+
+<!-- Main -->
+<div class="main">
+  <div class="topbar">
+    <span class="topbar-title" id="page-title">Dashboard</span>
+    <div class="search-box">
+      <span style="color:var(--text3);font-size:14px">⌕</span>
+      <input type="text" placeholder="Buscar producto..." id="global-search" oninput="globalSearch(this.value)">
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-label">TOTAL PRODUCTOS</span>
+          <span class="stat-value" id="stat-total">0</span>
+          <span class="stat-sub">productos registrados</span>
+        </div>
+        <div class="stat-card green">
+          <span class="stat-label">VALOR INVENTARIO</span>
+          <span class="stat-value" id="stat-valor">$0</span>
+          <span class="stat-sub">precio de costo</span>
+        </div>
+        <div class="stat-card red">
+          <span class="stat-label">BAJO STOCK</span>
+          <span class="stat-value" id="stat-bajo">0</span>
+          <span class="stat-sub">requieren reposición</span>
+        </div>
+        <div class="stat-card amber">
+          <span class="stat-label">CATEGORÍAS</span>
+          <span class="stat-value" id="stat-cats">0</span>
+          <span class="stat-sub">categorías activas</span>
+        </div>
+      </div>
+
+      <div class="table-section">
+        <div class="table-header">
+          <h2>Productos con bajo stock</h2>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>PRODUCTO</th><th>SKU</th><th>CATEGORÍA</th><th>STOCK</th><th>MÍN</th><th>ESTADO</th>
+            </tr>
+          </thead>
+          <tbody id="low-stock-table"><tr><td colspan="6" class="empty">Sin alertas ✓</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== PRODUCTOS ===== -->
+    <div class="page" id="page-productos">
+      <div class="table-section">
+        <div class="table-header">
+          <h2>Productos</h2>
+          <button class="btn btn-ghost btn-sm" onclick="exportCSV()">↓ Exportar CSV</button>
+          <button class="btn btn-primary btn-sm" onclick="openModal('add')">+ Agregar</button>
+        </div>
+        <div class="filter-bar">
+          <label>Categoría:</label>
+          <select id="filter-cat" onchange="renderTable()">
+            <option value="">Todas</option>
+          </select>
+          <label>Estado:</label>
+          <select id="filter-estado" onchange="renderTable()">
+            <option value="">Todos</option>
+            <option value="activo">Activo</option>
+            <option value="inactivo">Inactivo</option>
+          </select>
+          <label>Orden:</label>
+          <select id="sort-by" onchange="renderTable()">
+            <option value="nombre">Nombre</option>
+            <option value="stock">Stock</option>
+            <option value="precio">Precio</option>
+            <option value="fecha">Fecha</option>
+          </select>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th onclick="toggleSort('nombre')">NOMBRE ↕</th>
+              <th>SKU</th>
+              <th onclick="toggleSort('categoria')">CATEGORÍA ↕</th>
+              <th onclick="toggleSort('stock')">STOCK ↕</th>
+              <th onclick="toggleSort('precio_costo')">COSTO ↕</th>
+              <th onclick="toggleSort('precio_venta')">VENTA ↕</th>
+              <th>ESTADO</th>
+              <th>ACCIONES</th>
+            </tr>
+          </thead>
+          <tbody id="productos-table"></tbody>
+        </table>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </div>
+
+    <!-- ===== CATEGORÍAS ===== -->
+    <div class="page" id="page-categorias">
+      <div class="table-section">
+        <div class="table-header">
+          <h2>Categorías</h2>
+          <button class="btn btn-primary btn-sm" onclick="openCatModal()">+ Nueva categoría</button>
+        </div>
+        <table>
+          <thead>
+            <tr><th>ID</th><th>NOMBRE</th><th>DESCRIPCIÓN</th><th>PRODUCTOS</th><th>ACCIONES</th></tr>
+          </thead>
+          <tbody id="cat-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== MOVIMIENTOS ===== -->
+    <div class="page" id="page-movimientos">
+      <div class="table-section">
+        <div class="table-header">
+          <h2>Historial de movimientos</h2>
+          <button class="btn btn-primary btn-sm" onclick="openMovModal()">+ Registrar</button>
+        </div>
+        <table>
+          <thead>
+            <tr><th>FECHA</th><th>PRODUCTO</th><th>TIPO</th><th>CANTIDAD</th><th>NOTAS</th><th>USUARIO</th></tr>
+          </thead>
+          <tbody id="mov-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== SQL / BD ===== -->
+    <div class="page" id="page-sql">
+      <div class="sql-panel">
+        <div class="sql-header">
+          <h3>⌗ ESQUEMA SQL / CONEXIÓN BD</h3>
+        </div>
+        <div class="sql-body">
+          <div class="sql-tabs">
+            <button class="sql-tab active" onclick="showSql('create')">CREATE TABLE</button>
+            <button class="sql-tab" onclick="showSql('insert')">INSERT</button>
+            <button class="sql-tab" onclick="showSql('select')">SELECT</button>
+            <button class="sql-tab" onclick="showSql('api')">API JS</button>
+            <button class="sql-tab" onclick="showSql('php')">PHP PDO</button>
+          </div>
+          <div id="sql-content" class="sql-code"></div>
+          <div style="margin-top:14px;display:flex;gap:10px;">
+            <button class="btn btn-ghost btn-sm" onclick="copySql()">📋 Copiar SQL</button>
+            <span style="font-size:12px;color:var(--text3);align-self:center">Compatible con MySQL, PostgreSQL, SQLite</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sql-panel">
+        <div class="sql-header">
+          <h3>⚡ ESTADO LOCAL (localStorage)</h3>
+        </div>
+        <div class="sql-body" style="display:flex;gap:12px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="exportJSON()">↓ Exportar JSON</button>
+          <button class="btn btn-ghost btn-sm" onclick="importJSON()">↑ Importar JSON</button>
+          <button class="btn btn-danger btn-sm" onclick="resetDB()">⚠ Limpiar datos</button>
+          <input type="file" id="json-import" style="display:none" accept=".json" onchange="handleImport(event)">
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== MODAL PRODUCTO ===== -->
+<div class="modal-overlay" id="modal-producto">
+  <div class="modal">
+    <h2 class="modal-title" id="modal-titulo">Agregar producto</h2>
+    <div class="form-grid">
+      <div class="form-group" style="grid-column:1/-1">
+        <label>NOMBRE DEL PRODUCTO</label>
+        <input type="text" id="f-nombre" placeholder="Ej: Laptop Dell XPS 13">
+      </div>
+      <div class="form-group">
+        <label>SKU / CÓDIGO</label>
+        <input type="text" id="f-sku" placeholder="Ej: DELL-XPS-001">
+      </div>
+      <div class="form-group">
+        <label>CATEGORÍA</label>
+        <select id="f-cat"></select>
+      </div>
+      <div class="form-group">
+        <label>STOCK ACTUAL</label>
+        <input type="number" id="f-stock" min="0" value="0">
+      </div>
+      <div class="form-group">
+        <label>STOCK MÍNIMO</label>
+        <input type="number" id="f-stock-min" min="0" value="5">
+      </div>
+      <div class="form-group">
+        <label>PRECIO COSTO (RD$)</label>
+        <input type="number" id="f-costo" min="0" step="0.01" value="0">
+      </div>
+      <div class="form-group">
+        <label>PRECIO VENTA (RD$)</label>
+        <input type="number" id="f-venta" min="0" step="0.01" value="0">
+      </div>
+      <div class="form-group">
+        <label>PROVEEDOR</label>
+        <input type="text" id="f-proveedor" placeholder="Nombre del proveedor">
+      </div>
+      <div class="form-group">
+        <label>ESTADO</label>
+        <select id="f-estado">
+          <option value="activo">Activo</option>
+          <option value="inactivo">Inactivo</option>
+        </select>
+      </div>
+      <div class="form-group" style="grid-column:1/-1">
+        <label>DESCRIPCIÓN</label>
+        <textarea id="f-desc" placeholder="Descripción opcional..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-producto')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveProducto()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CATEGORÍA -->
+<div class="modal-overlay" id="modal-cat">
+  <div class="modal">
+    <h2 class="modal-title">Nueva categoría</h2>
+    <div class="form-grid form-full">
+      <div class="form-group">
+        <label>NOMBRE</label>
+        <input type="text" id="cat-nombre" placeholder="Ej: Electrónicos">
+      </div>
+      <div class="form-group">
+        <label>DESCRIPCIÓN</label>
+        <textarea id="cat-desc" placeholder="Descripción opcional..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-cat')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveCat()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MOVIMIENTO -->
+<div class="modal-overlay" id="modal-mov">
+  <div class="modal">
+    <h2 class="modal-title">Registrar movimiento</h2>
+    <div class="form-grid form-full">
+      <div class="form-group">
+        <label>PRODUCTO</label>
+        <select id="mov-prod"></select>
+      </div>
+      <div class="form-group">
+        <label>TIPO</label>
+        <select id="mov-tipo">
+          <option value="entrada">Entrada (compra/recepción)</option>
+          <option value="salida">Salida (venta/uso)</option>
+          <option value="ajuste">Ajuste de inventario</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>CANTIDAD</label>
+        <input type="number" id="mov-qty" min="1" value="1">
+      </div>
+      <div class="form-group">
+        <label>NOTAS</label>
+        <textarea id="mov-notas" placeholder="Motivo del movimiento..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-mov')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveMov()">Registrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toasts"></div>
+
+<script>
+// ========== DB (localStorage) ==========
+const DB = {
+  get: k => JSON.parse(localStorage.getItem('inv_'+k)||'null'),
+  set: (k,v) => localStorage.setItem('inv_'+k, JSON.stringify(v)),
+};
+
+function initDB() {
+  if (!DB.get('productos')) {
+    DB.set('productos', [
+      {id:1,nombre:'Laptop Dell Inspiron',sku:'DELL-INS-001',categoria_id:1,stock:12,stock_min:3,precio_costo:38000,precio_venta:52000,proveedor:'Dell RD',estado:'activo',descripcion:'Laptop 15.6" Intel i5',fecha:'2025-01-10'},
+      {id:2,nombre:'Mouse Inalámbrico Logitech',sku:'LOGI-MOU-002',categoria_id:1,stock:2,stock_min:5,precio_costo:1200,precio_venta:1850,proveedor:'Logitech',estado:'activo',descripcion:'Mouse MX3 inalámbrico',fecha:'2025-01-12'},
+      {id:3,nombre:'Silla Ergonómica',sku:'MOB-SIL-003',categoria_id:2,stock:4,stock_min:2,precio_costo:8500,precio_venta:12000,proveedor:'OfficeMax',estado:'activo',descripcion:'Silla de oficina ajustable',fecha:'2025-01-15'},
+      {id:4,nombre:'Teclado Mecánico RGB',sku:'TECK-MEC-004',categoria_id:1,stock:0,stock_min:3,precio_costo:3200,precio_venta:4900,proveedor:'HyperX',estado:'activo',descripcion:'Teclado mecánico switches red',fecha:'2025-01-18'},
+      {id:5,nombre:'Monitor 27" 4K',sku:'MON-27K-005',categoria_id:1,stock:7,stock_min:2,precio_costo:22000,precio_venta:30000,proveedor:'LG Electronics',estado:'activo',descripcion:'Monitor 4K IPS 144Hz',fecha:'2025-02-01'},
+      {id:6,nombre:'Resma Papel A4',sku:'PAP-A4-006',categoria_id:3,stock:45,stock_min:10,precio_costo:280,precio_venta:380,proveedor:'Papelería Central',estado:'activo',descripcion:'Papel bond 75g 500 hojas',fecha:'2025-02-05'},
+    ]);
+    DB.set('categorias', [
+      {id:1,nombre:'Electrónicos',descripcion:'Computadoras, periféricos y gadgets'},
+      {id:2,nombre:'Mobiliario',descripcion:'Muebles y equipamiento de oficina'},
+      {id:3,nombre:'Papelería',descripcion:'Útiles de oficina y papelería'},
+    ]);
+    DB.set('movimientos', [
+      {id:1,producto_id:1,tipo:'entrada',cantidad:12,notas:'Compra inicial',usuario:'Admin',fecha:'2025-01-10'},
+      {id:2,producto_id:2,tipo:'salida',cantidad:3,notas:'Venta cliente',usuario:'Admin',fecha:'2025-01-20'},
+      {id:3,producto_id:6,tipo:'entrada',cantidad:50,notas:'Reposición de stock',usuario:'Admin',fecha:'2025-02-05'},
+    ]);
+    DB.set('next_id', {productos:7,categorias:4,movimientos:4});
+  }
+}
+
+function getNextId(tabla) {
+  const ids = DB.get('next_id') || {productos:1,categorias:1,movimientos:1};
+  const id = ids[tabla];
+  ids[tabla]++;
+  DB.set('next_id', ids);
+  return id;
+}
+
+// ========== State ==========
+let currentPage = 'dashboard';
+let editId = null;
+let sortCol = 'nombre';
+let sortAsc = true;
+let pagCurrent = 1;
+const PER_PAGE = 8;
+
+// ========== Navigation ==========
+function showPage(p) {
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(el => {
+    if (el.getAttribute('onclick') === `showPage('${p}')`) el.classList.add('active');
+  });
+  const titles = {dashboard:'Dashboard',productos:'Productos',categorias:'Categorías',movimientos:'Movimientos',sql:'SQL / Base de Datos'};
+  document.getElementById('page-title').textContent = titles[p] || p;
+  currentPage = p;
+  if (p==='dashboard') renderDashboard();
+  if (p==='productos') { pagCurrent=1; renderTable(); }
+  if (p==='categorias') renderCats();
+  if (p==='movimientos') renderMovs();
+  if (p==='sql') showSql('create');
+}
+
+// ========== Dashboard ==========
+function renderDashboard() {
+  const prods = DB.get('productos') || [];
+  const cats = DB.get('categorias') || [];
+  const bajo = prods.filter(p => p.stock <= p.stock_min);
+  const valor = prods.reduce((s,p) => s + (p.precio_costo * p.stock), 0);
+
+  document.getElementById('stat-total').textContent = prods.length;
+  document.getElementById('stat-valor').textContent = 'RD$' + valor.toLocaleString('es-DO');
+  document.getElementById('stat-bajo').textContent = bajo.length;
+  document.getElementById('stat-cats').textContent = cats.length;
+
+  const tb = document.getElementById('low-stock-table');
+  if (bajo.length === 0) {
+    tb.innerHTML = '<tr><td colspan="6" class="empty">✓ Sin alertas de stock</td></tr>';
+  } else {
+    tb.innerHTML = bajo.map(p => {
+      const cat = (DB.get('categorias')||[]).find(c=>c.id===p.categoria_id);
+      const pct = p.stock_min > 0 ? Math.min(100, (p.stock/p.stock_min)*100) : 0;
+      const color = p.stock===0 ? '#ff5757' : '#ffb347';
+      return `<tr>
+        <td>${p.nombre}</td>
+        <td class="mono">${p.sku}</td>
+        <td>${cat?cat.nombre:'-'}</td>
+        <td>
+          <div class="stock-bar-wrap">
+            <span style="font-weight:500;color:${color}">${p.stock}</span>
+            <div class="stock-bar"><div class="stock-fill" style="width:${pct}%;background:${color}"></div></div>
+          </div>
+        </td>
+        <td class="mono">${p.stock_min}</td>
+        <td><span class="badge ${p.stock===0?'badge-red':'badge-amber'}">${p.stock===0?'SIN STOCK':'BAJO'}</span></td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+// ========== Productos Table ==========
+function renderTable() {
+  const prods = DB.get('productos') || [];
+  const cats = DB.get('categorias') || [];
+  const filterCat = document.getElementById('filter-cat').value;
+  const filterEst = document.getElementById('filter-estado').value;
+  const search = document.getElementById('global-search').value.toLowerCase();
+
+  let data = prods.filter(p => {
+    if (filterCat && p.categoria_id !== parseInt(filterCat)) return false;
+    if (filterEst && p.estado !== filterEst) return false;
+    if (search && !p.nombre.toLowerCase().includes(search) && !p.sku.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  data.sort((a,b) => {
+    let va = a[sortCol]||'', vb = b[sortCol]||'';
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    return sortAsc ? (va>vb?1:-1) : (va<vb?1:-1);
+  });
+
+  const total = data.length;
+  const pages = Math.ceil(total / PER_PAGE);
+  if (pagCurrent > pages && pages > 0) pagCurrent = pages;
+  const slice = data.slice((pagCurrent-1)*PER_PAGE, pagCurrent*PER_PAGE);
+
+  const tb = document.getElementById('productos-table');
+  if (slice.length === 0) {
+    tb.innerHTML = '<tr><td colspan="8" class="empty">No hay productos</td></tr>';
+  } else {
+    tb.innerHTML = slice.map(p => {
+      const cat = cats.find(c=>c.id===p.categoria_id);
+      const stockBadge = p.stock === 0 ? 'badge-red' : (p.stock <= p.stock_min ? 'badge-amber' : 'badge-green');
+      const stockLabel = p.stock === 0 ? '0 — Agotado' : p.stock;
+      const pct = p.stock_min > 0 ? Math.min(100, (p.stock/p.stock_min)*100) : 100;
+      const barColor = p.stock===0?'#ff5757':(p.stock<=p.stock_min?'#ffb347':'#22d07a');
+      return `<tr>
+        <td><strong style="font-size:13px">${p.nombre}</strong><br><span style="font-size:11px;color:var(--text3)">${p.descripcion||''}</span></td>
+        <td class="mono">${p.sku}</td>
+        <td>${cat?`<span class="badge badge-purple">${cat.nombre}</span>`:'-'}</td>
+        <td>
+          <div class="stock-bar-wrap">
+            <span class="${stockBadge}" style="font-family:var(--mono);font-size:12px;font-weight:500">${stockLabel}</span>
+            <div class="stock-bar"><div class="stock-fill" style="width:${pct}%;background:${barColor}"></div></div>
+          </div>
+        </td>
+        <td class="mono">RD$${p.precio_costo.toLocaleString()}</td>
+        <td class="mono">RD$${p.precio_venta.toLocaleString()}</td>
+        <td><span class="badge ${p.estado==='activo'?'badge-green':'badge-red'}">${p.estado}</span></td>
+        <td>
+          <button class="btn btn-ghost btn-sm" onclick="openModal('edit',${p.id})" style="margin-right:4px">✎</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteProducto(${p.id})">✕</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Pagination
+  let pag = `<span class="pag-info">${total} productos</span>`;
+  for (let i=1; i<=pages; i++) {
+    pag += `<button class="pag-btn ${i===pagCurrent?'active':''}" onclick="pagCurrent=${i};renderTable()">${i}</button>`;
+  }
+  document.getElementById('pagination').innerHTML = pag;
+
+  // Update filter-cat select
+  const fc = document.getElementById('filter-cat');
+  const cur = fc.value;
+  fc.innerHTML = '<option value="">Todas</option>' + cats.map(c=>`<option value="${c.id}" ${cur==c.id?'selected':''}>${c.nombre}</option>`).join('');
+  fc.value = cur;
+}
+
+function toggleSort(col) {
+  if (sortCol === col) sortAsc = !sortAsc; else { sortCol=col; sortAsc=true; }
+  renderTable();
+}
+
+function globalSearch(v) {
+  if (currentPage === 'productos') renderTable();
+  else if (v) { showPage('productos'); }
+}
+
+// ========== Producto CRUD ==========
+function openModal(mode, id=null) {
+  editId = null;
+  const cats = DB.get('categorias') || [];
+  document.getElementById('f-cat').innerHTML = cats.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
+
+  if (mode === 'edit' && id) {
+    editId = id;
+    const p = (DB.get('productos')||[]).find(x=>x.id===id);
+    if (!p) return;
+    document.getElementById('modal-titulo').textContent = 'Editar producto';
+    document.getElementById('f-nombre').value = p.nombre;
+    document.getElementById('f-sku').value = p.sku;
+    document.getElementById('f-cat').value = p.categoria_id;
+    document.getElementById('f-stock').value = p.stock;
+    document.getElementById('f-stock-min').value = p.stock_min;
+    document.getElementById('f-costo').value = p.precio_costo;
+    document.getElementById('f-venta').value = p.precio_venta;
+    document.getElementById('f-proveedor').value = p.proveedor || '';
+    document.getElementById('f-estado').value = p.estado;
+    document.getElementById('f-desc').value = p.descripcion || '';
+  } else {
+    document.getElementById('modal-titulo').textContent = 'Agregar producto';
+    ['f-nombre','f-sku','f-proveedor','f-desc'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('f-stock').value = 0;
+    document.getElementById('f-stock-min').value = 5;
+    document.getElementById('f-costo').value = 0;
+    document.getElementById('f-venta').value = 0;
+    document.getElementById('f-estado').value = 'activo';
+  }
+  document.getElementById('modal-producto').classList.add('open');
+}
+
+function saveProducto() {
+  const nombre = document.getElementById('f-nombre').value.trim();
+  const sku = document.getElementById('f-sku').value.trim();
+  if (!nombre || !sku) { toast('Nombre y SKU son requeridos','error'); return; }
+
+  const obj = {
+    nombre, sku,
+    categoria_id: parseInt(document.getElementById('f-cat').value),
+    stock: parseInt(document.getElementById('f-stock').value) || 0,
+    stock_min: parseInt(document.getElementById('f-stock-min').value) || 0,
+    precio_costo: parseFloat(document.getElementById('f-costo').value) || 0,
+    precio_venta: parseFloat(document.getElementById('f-venta').value) || 0,
+    proveedor: document.getElementById('f-proveedor').value.trim(),
+    estado: document.getElementById('f-estado').value,
+    descripcion: document.getElementById('f-desc').value.trim(),
+    fecha: new Date().toISOString().split('T')[0],
+  };
+
+  const prods = DB.get('productos') || [];
+  if (editId) {
+    const idx = prods.findIndex(p=>p.id===editId);
+    prods[idx] = {...prods[idx], ...obj};
+    toast('Producto actualizado ✓','success');
+  } else {
+    obj.id = getNextId('productos');
+    // Check SKU duplicado
+    if (prods.find(p=>p.sku===sku)) { toast('SKU ya existe','error'); return; }
+    prods.push(obj);
+    toast('Producto agregado ✓','success');
+  }
+  DB.set('productos', prods);
+  closeModal('modal-producto');
+  renderTable();
+  renderDashboard();
+}
+
+function deleteProducto(id) {
+  if (!confirm('¿Eliminar este producto?')) return;
+  const prods = (DB.get('productos')||[]).filter(p=>p.id!==id);
+  DB.set('productos', prods);
+  toast('Producto eliminado','success');
+  renderTable();
+  renderDashboard();
+}
+
+// ========== Categorías ==========
+function renderCats() {
+  const cats = DB.get('categorias') || [];
+  const prods = DB.get('productos') || [];
+  const tb = document.getElementById('cat-table');
+  if (cats.length === 0) {
+    tb.innerHTML = '<tr><td colspan="5" class="empty">Sin categorías</td></tr>';
+  } else {
+    tb.innerHTML = cats.map(c => {
+      const count = prods.filter(p=>p.categoria_id===c.id).length;
+      return `<tr>
+        <td class="mono">#${c.id}</td>
+        <td><strong>${c.nombre}</strong></td>
+        <td style="color:var(--text2)">${c.descripcion||'-'}</td>
+        <td><span class="badge badge-purple">${count}</span></td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteCat(${c.id})">✕ Eliminar</button></td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+function openCatModal() {
+  document.getElementById('cat-nombre').value = '';
+  document.getElementById('cat-desc').value = '';
+  document.getElementById('modal-cat').classList.add('open');
+}
+
+function saveCat() {
+  const nombre = document.getElementById('cat-nombre').value.trim();
+  if (!nombre) { toast('Nombre requerido','error'); return; }
+  const cats = DB.get('categorias') || [];
+  cats.push({id: getNextId('categorias'), nombre, descripcion: document.getElementById('cat-desc').value.trim()});
+  DB.set('categorias', cats);
+  toast('Categoría creada ✓','success');
+  closeModal('modal-cat');
+  renderCats();
+}
+
+function deleteCat(id) {
+  const prods = DB.get('productos') || [];
+  if (prods.find(p=>p.categoria_id===id)) { toast('No se puede eliminar: tiene productos','error'); return; }
+  if (!confirm('¿Eliminar categoría?')) return;
+  DB.set('categorias', (DB.get('categorias')||[]).filter(c=>c.id!==id));
+  toast('Categoría eliminada','success');
+  renderCats();
+}
+
+// ========== Movimientos ==========
+function renderMovs() {
+  const movs = DB.get('movimientos') || [];
+  const prods = DB.get('productos') || [];
+  const tb = document.getElementById('mov-table');
+  if (movs.length === 0) {
+    tb.innerHTML = '<tr><td colspan="6" class="empty">Sin movimientos</td></tr>';
+  } else {
+    const sorted = [...movs].sort((a,b) => b.id - a.id);
+    tb.innerHTML = sorted.map(m => {
+      const prod = prods.find(p=>p.id===m.producto_id);
+      const badge = m.tipo==='entrada'?'badge-green':(m.tipo==='salida'?'badge-red':'badge-amber');
+      const sign = m.tipo==='entrada'?'+':'−';
+      return `<tr>
+        <td class="mono" style="font-size:12px">${m.fecha}</td>
+        <td>${prod?prod.nombre:'Producto eliminado'}</td>
+        <td><span class="badge ${badge}">${m.tipo.toUpperCase()}</span></td>
+        <td style="font-family:var(--mono);font-weight:500;color:${m.tipo==='entrada'?'var(--green)':'var(--red)'}">${sign}${m.cantidad}</td>
+        <td style="color:var(--text2)">${m.notas||'-'}</td>
+        <td style="color:var(--text3)">${m.usuario}</td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+function openMovModal() {
+  const prods = DB.get('productos') || [];
+  document.getElementById('mov-prod').innerHTML = prods.map(p=>`<option value="${p.id}">${p.nombre} (stock: ${p.stock})</option>`).join('');
+  document.getElementById('mov-qty').value = 1;
+  document.getElementById('mov-notas').value = '';
+  document.getElementById('modal-mov').classList.add('open');
+}
+
+function saveMov() {
+  const pid = parseInt(document.getElementById('mov-prod').value);
+  const tipo = document.getElementById('mov-tipo').value;
+  const qty = parseInt(document.getElementById('mov-qty').value) || 0;
+  const notas = document.getElementById('mov-notas').value.trim();
+  if (qty <= 0) { toast('Cantidad inválida','error'); return; }
+
+  const prods = DB.get('productos') || [];
+  const idx = prods.findIndex(p=>p.id===pid);
+  if (idx === -1) { toast('Producto no encontrado','error'); return; }
+
+  if (tipo === 'salida' && prods[idx].stock < qty) {
+    toast(`Stock insuficiente (disponible: ${prods[idx].stock})`,'error'); return;
+  }
+
+  prods[idx].stock += tipo === 'entrada' ? qty : -qty;
+  DB.set('productos', prods);
+
+  const movs = DB.get('movimientos') || [];
+  movs.push({id: getNextId('movimientos'), producto_id: pid, tipo, cantidad: qty, notas, usuario:'Admin', fecha: new Date().toISOString().split('T')[0]});
+  DB.set('movimientos', movs);
+
+  toast(`Movimiento registrado (stock: ${prods[idx].stock})`,'success');
+  closeModal('modal-mov');
+  renderMovs();
+  renderDashboard();
+}
+
+// ========== SQL ==========
+const SQL_SNIPPETS = {
+  create: `<span class="sql-cmt">-- Esquema compatible con MySQL / PostgreSQL / SQLite</span>
+
+<span class="sql-kw">CREATE TABLE</span> categorias (
+  id          <span class="sql-kw">INT</span> <span class="sql-kw">PRIMARY KEY AUTO_INCREMENT</span>,
+  nombre      <span class="sql-kw">VARCHAR</span>(<span class="sql-num">100</span>) <span class="sql-kw">NOT NULL</span>,
+  descripcion <span class="sql-kw">TEXT</span>,
+  created_at  <span class="sql-kw">TIMESTAMP DEFAULT CURRENT_TIMESTAMP</span>
+);
+
+<span class="sql-kw">CREATE TABLE</span> productos (
+  id           <span class="sql-kw">INT</span> <span class="sql-kw">PRIMARY KEY AUTO_INCREMENT</span>,
+  nombre       <span class="sql-kw">VARCHAR</span>(<span class="sql-num">200</span>) <span class="sql-kw">NOT NULL</span>,
+  sku          <span class="sql-kw">VARCHAR</span>(<span class="sql-num">50</span>)  <span class="sql-kw">UNIQUE NOT NULL</span>,
+  categoria_id <span class="sql-kw">INT REFERENCES</span> categorias(id),
+  stock        <span class="sql-kw">INT DEFAULT</span> <span class="sql-num">0</span>,
+  stock_min    <span class="sql-kw">INT DEFAULT</span> <span class="sql-num">0</span>,
+  precio_costo <span class="sql-kw">DECIMAL</span>(<span class="sql-num">10,2</span>) <span class="sql-kw">DEFAULT</span> <span class="sql-num">0</span>,
+  precio_venta <span class="sql-kw">DECIMAL</span>(<span class="sql-num">10,2</span>) <span class="sql-kw">DEFAULT</span> <span class="sql-num">0</span>,
+  proveedor    <span class="sql-kw">VARCHAR</span>(<span class="sql-num">150</span>),
+  estado       <span class="sql-kw">ENUM</span>(<span class="sql-str">'activo'</span>,<span class="sql-str">'inactivo'</span>) <span class="sql-kw">DEFAULT</span> <span class="sql-str">'activo'</span>,
+  descripcion  <span class="sql-kw">TEXT</span>,
+  created_at   <span class="sql-kw">TIMESTAMP DEFAULT CURRENT_TIMESTAMP</span>
+);
+
+<span class="sql-kw">CREATE TABLE</span> movimientos (
+  id          <span class="sql-kw">INT</span> <span class="sql-kw">PRIMARY KEY AUTO_INCREMENT</span>,
+  producto_id <span class="sql-kw">INT REFERENCES</span> productos(id),
+  tipo        <span class="sql-kw">ENUM</span>(<span class="sql-str">'entrada'</span>,<span class="sql-str">'salida'</span>,<span class="sql-str">'ajuste'</span>),
+  cantidad    <span class="sql-kw">INT NOT NULL</span>,
+  notas       <span class="sql-kw">TEXT</span>,
+  usuario     <span class="sql-kw">VARCHAR</span>(<span class="sql-num">100</span>),
+  created_at  <span class="sql-kw">TIMESTAMP DEFAULT CURRENT_TIMESTAMP</span>
+);`,
+
+  insert: `<span class="sql-cmt">-- Insertar categoría</span>
+<span class="sql-kw">INSERT INTO</span> categorias (nombre, descripcion)
+<span class="sql-kw">VALUES</span> (<span class="sql-str">'Electrónicos'</span>, <span class="sql-str">'Computadoras y periféricos'</span>);
+
+<span class="sql-cmt">-- Insertar producto</span>
+<span class="sql-kw">INSERT INTO</span> productos
+  (nombre, sku, categoria_id, stock, stock_min, precio_costo, precio_venta, proveedor)
+<span class="sql-kw">VALUES</span>
+  (<span class="sql-str">'Laptop Dell'</span>, <span class="sql-str">'DELL-001'</span>, <span class="sql-num">1</span>, <span class="sql-num">10</span>, <span class="sql-num">3</span>, <span class="sql-num">38000.00</span>, <span class="sql-num">52000.00</span>, <span class="sql-str">'Dell RD'</span>);
+
+<span class="sql-cmt">-- Registrar movimiento + actualizar stock</span>
+<span class="sql-kw">START TRANSACTION</span>;
+  <span class="sql-kw">INSERT INTO</span> movimientos (producto_id, tipo, cantidad, notas, usuario)
+  <span class="sql-kw">VALUES</span> (<span class="sql-num">1</span>, <span class="sql-str">'salida'</span>, <span class="sql-num">2</span>, <span class="sql-str">'Venta #1023'</span>, <span class="sql-str">'admin'</span>);
+
+  <span class="sql-kw">UPDATE</span> productos
+  <span class="sql-kw">SET</span> stock = stock - <span class="sql-num">2</span>
+  <span class="sql-kw">WHERE</span> id = <span class="sql-num">1</span>;
+<span class="sql-kw">COMMIT</span>;`,
+
+  select: `<span class="sql-cmt">-- Todos los productos con categoría</span>
+<span class="sql-kw">SELECT</span> p.*, c.nombre <span class="sql-kw">AS</span> categoria
+<span class="sql-kw">FROM</span> productos p
+<span class="sql-kw">LEFT JOIN</span> categorias c <span class="sql-kw">ON</span> p.categoria_id = c.id
+<span class="sql-kw">ORDER BY</span> p.nombre;
+
+<span class="sql-cmt">-- Productos con bajo stock</span>
+<span class="sql-kw">SELECT</span> nombre, sku, stock, stock_min
+<span class="sql-kw">FROM</span> productos
+<span class="sql-kw">WHERE</span> stock &lt;= stock_min <span class="sql-kw">AND</span> estado = <span class="sql-str">'activo'</span>;
+
+<span class="sql-cmt">-- Valor total del inventario</span>
+<span class="sql-kw">SELECT</span>
+  <span class="sql-kw">SUM</span>(stock * precio_costo) <span class="sql-kw">AS</span> valor_costo,
+  <span class="sql-kw">SUM</span>(stock * precio_venta) <span class="sql-kw">AS</span> valor_venta
+<span class="sql-kw">FROM</span> productos <span class="sql-kw">WHERE</span> estado = <span class="sql-str">'activo'</span>;
+
+<span class="sql-cmt">-- Historial de movimientos</span>
+<span class="sql-kw">SELECT</span> m.*, p.nombre, p.sku
+<span class="sql-kw">FROM</span> movimientos m
+<span class="sql-kw">JOIN</span> productos p <span class="sql-kw">ON</span> m.producto_id = p.id
+<span class="sql-kw">ORDER BY</span> m.created_at <span class="sql-kw">DESC</span>
+<span class="sql-kw">LIMIT</span> <span class="sql-num">50</span>;`,
+
+  api: `<span class="sql-cmt">// Conexión con API REST (fetch / Node.js + MySQL)</span>
+
+<span class="sql-cmt">// GET todos los productos</span>
+<span class="sql-kw">const</span> prods = <span class="sql-kw">await</span> fetch(<span class="sql-str">'/api/productos'</span>)
+  .then(r => r.json());
+
+<span class="sql-cmt">// POST crear producto</span>
+<span class="sql-kw">await</span> fetch(<span class="sql-str">'/api/productos'</span>, {
+  method: <span class="sql-str">'POST'</span>,
+  headers: { <span class="sql-str">'Content-Type'</span>: <span class="sql-str">'application/json'</span> },
+  body: JSON.stringify({
+    nombre: <span class="sql-str">'Nuevo producto'</span>,
+    sku:    <span class="sql-str">'NEW-001'</span>,
+    stock:  <span class="sql-num">10</span>,
+    precio_venta: <span class="sql-num">5000</span>
+  })
+});
+
+<span class="sql-cmt">// Node.js + mysql2</span>
+<span class="sql-kw">const</span> mysql = require(<span class="sql-str">'mysql2/promise'</span>);
+<span class="sql-kw">const</span> pool  = mysql.createPool({
+  host:     <span class="sql-str">'localhost'</span>,
+  user:     <span class="sql-str">'root'</span>,
+  password: <span class="sql-str">'tu_clave'</span>,
+  database: <span class="sql-str">'inventario_db'</span>
+});
+
+<span class="sql-kw">const</span> [rows] = <span class="sql-kw">await</span> pool.execute(
+  <span class="sql-str">'SELECT * FROM productos WHERE estado = ?'</span>,
+  [<span class="sql-str">'activo'</span>]
+);`,
+
+  php: `<span class="sql-cmt">&lt;?php // PHP PDO - Conexión y consultas</span>
+
+<span class="sql-cmt">// Conexión</span>
+<span class="sql-kw">$dsn</span> = <span class="sql-str">"mysql:host=localhost;dbname=inventario_db;charset=utf8"</span>;
+<span class="sql-kw">$pdo</span> = <span class="sql-kw">new</span> PDO(<span class="sql-kw">$dsn</span>, <span class="sql-str">'usuario'</span>, <span class="sql-str">'clave'</span>, [
+  PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+  PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+]);
+
+<span class="sql-cmt">// Listar productos activos</span>
+<span class="sql-kw">$stmt</span> = <span class="sql-kw">$pdo</span>->prepare(<span class="sql-str">
+  "SELECT p.*, c.nombre AS categoria
+   FROM productos p
+   LEFT JOIN categorias c ON p.categoria_id = c.id
+   WHERE p.estado = :estado ORDER BY p.nombre"</span>
+);
+<span class="sql-kw">$stmt</span>->execute([<span class="sql-str">'estado'</span> => <span class="sql-str">'activo'</span>]);
+<span class="sql-kw">$productos</span> = <span class="sql-kw">$stmt</span>->fetchAll();
+echo json_encode(<span class="sql-kw">$productos</span>);
+
+<span class="sql-cmt">// Agregar producto</span>
+<span class="sql-kw">$stmt</span> = <span class="sql-kw">$pdo</span>->prepare(<span class="sql-str">
+  "INSERT INTO productos (nombre, sku, categoria_id, stock, precio_venta)
+   VALUES (:nombre, :sku, :cat_id, :stock, :precio)"</span>
+);
+<span class="sql-kw">$stmt</span>->execute(<span class="sql-kw">$_POST</span>);
+?>`
+};
+
+function showSql(tab) {
+  document.querySelectorAll('.sql-tab').forEach(t=>t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('sql-content').innerHTML = SQL_SNIPPETS[tab];
+}
+
+function copySql() {
+  const el = document.getElementById('sql-content');
+  navigator.clipboard.writeText(el.innerText).then(()=>toast('SQL copiado ✓','success'));
+}
+
+// ========== Export/Import ==========
+function exportCSV() {
+  const prods = DB.get('productos') || [];
+  const cats = DB.get('categorias') || [];
+  const header = 'ID,Nombre,SKU,Categoría,Stock,Stock Mín,Precio Costo,Precio Venta,Proveedor,Estado,Fecha';
+  const rows = prods.map(p => {
+    const cat = cats.find(c=>c.id===p.categoria_id);
+    return [p.id,`"${p.nombre}"`,p.sku,cat?cat.nombre:'',p.stock,p.stock_min,p.precio_costo,p.precio_venta,`"${p.proveedor||''}"`,p.estado,p.fecha].join(',');
+  });
+  const csv = [header, ...rows].join('\n');
+  download('inventario.csv', csv, 'text/csv');
+  toast('CSV exportado ✓','success');
+}
+
+function exportJSON() {
+  const data = {
+    productos: DB.get('productos'),
+    categorias: DB.get('categorias'),
+    movimientos: DB.get('movimientos'),
+    next_id: DB.get('next_id'),
+    exportado: new Date().toISOString()
+  };
+  download('inventario.json', JSON.stringify(data, null, 2), 'application/json');
+  toast('JSON exportado ✓','success');
+}
+
+function importJSON() {
+  document.getElementById('json-import').click();
+}
+
+function handleImport(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (data.productos) DB.set('productos', data.productos);
+      if (data.categorias) DB.set('categorias', data.categorias);
+      if (data.movimientos) DB.set('movimientos', data.movimientos);
+      if (data.next_id) DB.set('next_id', data.next_id);
+      toast('Datos importados ✓','success');
+      renderDashboard();
+    } catch { toast('Error al importar JSON','error'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function resetDB() {
+  if (!confirm('¿Limpiar TODOS los datos? Esta acción no se puede deshacer.')) return;
+  ['productos','categorias','movimientos','next_id'].forEach(k => localStorage.removeItem('inv_'+k));
+  initDB();
+  toast('Datos restablecidos','success');
+  renderDashboard();
+}
+
+function download(filename, content, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], {type}));
+  a.download = filename;
+  a.click();
+}
+
+// ========== Modal helpers ==========
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
+// ========== Toast ==========
+function toast(msg, type='success') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${type==='success'?'✓':'✕'}</span> ${msg}`;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+// ========== Init ==========
+initDB();
+renderDashboard();
+</script>
+</body>
+</html>

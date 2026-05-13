@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dunkin — Sistema de Gestion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:#FAF9F8;color:#1A1614;display:flex;min-height:100vh;}
+a{text-decoration:none;}
+input,select,textarea,button{font-family:'Barlow',sans-serif;}
+button{cursor:pointer;}
+textarea{resize:vertical;}
+
+/* SIDEBAR */
+#sidebar{width:220px;background:#fff;border-right:1px solid #E4DFD9;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;}
+.sidebar-logo{padding:18px 16px;border-bottom:1px solid #F2EFEC;display:flex;align-items:center;gap:10px;}
+.logo-icon{width:36px;height:36px;border-radius:8px;background:#FF6B1A;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.logo-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:17px;letter-spacing:1px;color:#FF6B1A;line-height:1;}
+.logo-sub{font-size:9px;color:#A09990;font-weight:600;letter-spacing:.6px;margin-top:2px;}
+#sidebar nav{flex:1;padding:10px 8px;}
+.nav-btn{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:7px;color:#756E67;font-size:13.5px;font-weight:500;cursor:pointer;border:none;background:none;width:100%;text-align:left;transition:all .15s;position:relative;}
+.nav-btn:hover{background:#F2EFEC;color:#1A1614;}
+.nav-btn.active{background:#FFF0E8;color:#FF6B1A;font-weight:600;}
+.nav-btn svg{flex-shrink:0;}
+.nav-badge{margin-left:auto;background:#C0392B;color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:100px;}
+.sidebar-foot{padding:10px 8px;border-top:1px solid #F2EFEC;}
+.user-info{padding:7px 12px;margin-bottom:4px;}
+.user-name{font-size:13px;font-weight:600;color:#1A1614;}
+.user-role{font-size:11px;color:#A09990;}
+
+/* MAIN */
+#main{margin-left:220px;flex:1;padding:26px 30px;min-width:0;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:6px;font-size:13.5px;font-weight:600;border:none;transition:all .15s;cursor:pointer;white-space:nowrap;}
+.btn-primary{background:#FF6B1A;color:#fff;}.btn-primary:hover{background:#E55500;}
+.btn-secondary{background:transparent;color:#FF6B1A;border:1.5px solid #FF6B1A;}.btn-secondary:hover{background:#FF6B1A;color:#fff;}
+.btn-ghost{background:transparent;color:#756E67;border:1.5px solid #E4DFD9;padding:7px 14px;font-size:13px;}.btn-ghost:hover{background:#F2EFEC;color:#1A1614;border-color:#C9C3BC;}
+.btn-danger{background:transparent;color:#C0392B;border:1.5px solid #C0392B;padding:6px 12px;font-size:12.5px;}.btn-danger:hover{background:#FBEAEA;}
+.btn-sm{padding:5px 11px;font-size:12px;}
+.btn-icon{background:none;border:none;padding:5px;border-radius:5px;cursor:pointer;transition:opacity .15s;}.btn-icon:hover{opacity:.7;}
+
+/* FORMS */
+.input,.select{width:100%;padding:8px 11px;border:1.5px solid #E4DFD9;border-radius:6px;font-size:13.5px;color:#1A1614;background:#fff;outline:none;transition:border-color .15s;}
+.input:focus,.select:focus{border-color:#FF6B1A;}
+.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23A09990' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+.form-group{margin-bottom:13px;}
+.form-group label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#756E67;margin-bottom:4px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+.form-check{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;color:#1A1614;}
+.form-check input{width:15px;height:15px;accent-color:#FF6B1A;}
+
+/* CARDS & TABLE */
+.card{background:#fff;border:1px solid #E4DFD9;border-radius:10px;padding:18px 20px;}
+.card-flush{background:#fff;border:1px solid #E4DFD9;border-radius:10px;overflow:hidden;}
+table{width:100%;border-collapse:collapse;font-size:13.5px;}
+thead th{text-align:left;padding:9px 13px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#756E67;background:#FAF9F8;border-bottom:1.5px solid #E4DFD9;}
+tbody td{padding:10px 13px;border-bottom:1px solid #F2EFEC;vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:#FFFAF7;}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 9px;border-radius:100px;font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;}
+.badge-success{background:#EBF5ED;color:#2D7A3A;}
+.badge-danger{background:#FBEAEA;color:#C0392B;}
+.badge-warning{background:#FEF3E7;color:#A0520A;}
+.badge-info{background:#EEF4FF;color:#2B4CA0;}
+.badge-gray{background:#F2EFEC;color:#756E67;}
+.tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600;background:#F2EFEC;color:#756E67;font-family:monospace;}
+
+/* STATS */
+.stat-grid{display:grid;gap:13px;}
+.stat-card{background:#fff;border:1px solid #E4DFD9;border-radius:9px;padding:16px 18px;}
+.stat-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#A09990;margin-bottom:5px;}
+.stat-value{font-size:26px;font-weight:700;font-family:'Barlow Condensed',sans-serif;line-height:1.1;}
+.stat-sub{font-size:12px;color:#A09990;margin-top:3px;}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;z-index:500;padding:16px;}
+.modal{background:#fff;border-radius:12px;padding:26px 28px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;box-shadow:0 10px 50px rgba(0,0,0,.22);}
+.modal h2{font-size:17px;font-weight:700;margin-bottom:18px;}
+.modal-wide{max-width:600px;}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;}
+
+/* SECTION */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px;}
+.section-title{font-family:'Barlow Condensed',sans-serif;font-size:21px;font-weight:700;letter-spacing:.3px;color:#1A1614;}
+.action-bar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
+.search-wrap{position:relative;display:inline-flex;align-items:center;}
+.search-wrap svg{position:absolute;left:9px;pointer-events:none;color:#A09990;}
+.search-wrap input{padding-left:32px;}
+.divider{height:1px;background:#F2EFEC;margin:13px 0;}
+.empty{text-align:center;padding:40px;color:#A09990;font-size:14px;}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;background:#2C2825;color:#fff;padding:11px 18px;border-radius:7px;font-size:13.5px;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.25);z-index:9999;display:none;animation:slideUp .2s ease;}
+@keyframes slideUp{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* FILTER TABS */
+.filter-tabs{display:flex;gap:6px;flex-wrap:wrap;}
+.filter-tab{padding:6px 13px;border-radius:6px;font-size:12.5px;font-weight:600;border:1.5px solid #E4DFD9;background:#fff;color:#756E67;cursor:pointer;transition:all .15s;}
+.filter-tab:hover{border-color:#C9C3BC;color:#1A1614;}
+.filter-tab.active{background:#FF6B1A;color:#fff;border-color:#FF6B1A;}
+
+/* SQL */
+.sql-bar{background:#2C2825;border-radius:8px 8px 0 0;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;}
+.sql-editor{width:100%;min-height:170px;background:#1E1C1A;color:#B8D5A0;font-family:monospace;font-size:13px;border:none;border-radius:0 0 8px 8px;padding:14px;outline:none;line-height:1.7;display:block;}
+.sql-result{background:#fff;border:1px solid #E4DFD9;border-radius:8px;overflow:hidden;margin-top:10px;}
+.sql-ok{padding:13px 15px;font-size:13.5px;color:#2D7A3A;font-weight:500;}
+.sql-err{background:#FBEAEA;color:#C0392B;border-radius:7px;padding:10px 13px;font-size:13px;font-family:monospace;margin-top:8px;}
+
+/* INVOICE PRINT */
+@media print{#sidebar,#topbar,.no-print{display:none!important;}#main{margin:0;padding:20px;}}
+
+/* PROGRESS BAR */
+.progress-bar{height:5px;background:#F2EFEC;border-radius:100px;overflow:hidden;margin-top:5px;}
+.progress-fill{height:100%;border-radius:100px;transition:width .3s;}
+
+/* RESPONSIVE adjustments */
+@media(max-width:900px){
+  #sidebar{width:180px;}
+  #main{margin-left:180px;padding:18px 16px;}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
+    </div>
+    <div>
+      <div class="logo-name">DUNKIN</div>
+      <div class="logo-sub">SISTEMA DE GESTION</div>
+    </div>
+  </div>
+  <nav id="nav"></nav>
+  <div class="sidebar-foot">
+    <div class="user-info">
+      <div class="user-name" id="uname">admin</div>
+      <div class="user-role">Administrador — Azua</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main"></div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ── DATOS INICIALES (simula tu base de datos SQL) ─────────────────────────
+const DB = {
+  products: [
+    {id:1,sku:"DK-001",name:"Donut Glazed Classic",cat:"Donuts",price:1.29,cost:.45,stock:240,min:50,unit:"pcs",supplier:"Dunkin Supply Co.",active:true},
+    {id:2,sku:"DK-002",name:"Donut Chocolate Frosted",cat:"Donuts",price:1.49,cost:.55,stock:180,min:50,unit:"pcs",supplier:"Dunkin Supply Co.",active:true},
+    {id:3,sku:"DK-003",name:"Donut Boston Cream",cat:"Donuts",price:1.59,cost:.60,stock:12,min:40,unit:"pcs",supplier:"Dunkin Supply Co.",active:true},
+    {id:4,sku:"DK-004",name:"Munchkins Box 25",cat:"Munchkins",price:8.99,cost:2.80,stock:95,min:20,unit:"box",supplier:"Dunkin Supply Co.",active:true},
+    {id:5,sku:"DK-005",name:"Coffee Medium Hot",cat:"Bebidas",price:2.49,cost:.60,stock:500,min:100,unit:"cup",supplier:"Arabica Beans LLC",active:true},
+    {id:6,sku:"DK-006",name:"Coffee Large Iced",cat:"Bebidas",price:3.49,cost:.85,stock:8,min:80,unit:"cup",supplier:"Arabica Beans LLC",active:true},
+    {id:7,sku:"DK-007",name:"Bagel Plain",cat:"Panaderia",price:1.79,cost:.50,stock:75,min:30,unit:"pcs",supplier:"Fresh Bake Partners",active:true},
+    {id:8,sku:"DK-008",name:"Croissant Butter",cat:"Panaderia",price:2.29,cost:.75,stock:42,min:25,unit:"pcs",supplier:"Fresh Bake Partners",active:true},
+    {id:9,sku:"DK-009",name:"Coolatta Vanilla",cat:"Bebidas",price:3.99,cost:1.10,stock:0,min:60,unit:"cup",supplier:"Arabica Beans LLC",active:false},
+    {id:10,sku:"DK-010",name:"Wake-Up Wrap",cat:"Sandwiches",price:2.99,cost:.90,stock:65,min:20,unit:"pcs",supplier:"Fresh Bake Partners",active:true},
+  ],
+  clients: [
+    {id:1,name:"Juan Ramirez",email:"juan@gmail.com",phone:"809-555-0101",address:"Calle Principal 45, Azua",type:"Regular",notes:""},
+    {id:2,name:"Maria Santos",email:"maria@company.do",phone:"849-555-0202",address:"Av. Libertad 12, Azua",type:"Corporativo",notes:"Pedidos los lunes"},
+    {id:3,name:"Corporacion XYZ",email:"compras@xyz.do",phone:"829-555-0303",address:"Zona Industrial, Azua",type:"Corporativo",notes:"Factura a nombre de empresa"},
+    {id:4,name:"Pedro Gomez",email:"pedro@gmail.com",phone:"809-555-0404",address:"Residencial Las Palmas, Azua",type:"Regular",notes:""},
+  ],
+  invoices: [
+    {id:1001,clientId:1,clientName:"Juan Ramirez",date:"2025-05-01",due:"2025-05-15",status:"Pagada",items:[{pid:1,name:"Donut Glazed Classic",qty:12,price:1.29},{pid:5,name:"Coffee Medium Hot",qty:4,price:2.49}],tax:.18,disc:0,notes:""},
+    {id:1002,clientId:3,clientName:"Corporacion XYZ",date:"2025-05-03",due:"2025-05-17",status:"Pendiente",items:[{pid:4,name:"Munchkins Box 25",qty:10,price:8.99},{pid:5,name:"Coffee Medium Hot",qty:20,price:2.49}],tax:.18,disc:5,notes:"Descuento corporativo"},
+    {id:1003,clientId:2,clientName:"Maria Santos",date:"2025-05-05",due:"2025-05-19",status:"Pendiente",items:[{pid:7,name:"Bagel Plain",qty:6,price:1.79},{pid:8,name:"Croissant Butter",qty:4,price:2.29}],tax:.18,disc:0,notes:""},
+    {id:1004,clientId:1,clientName:"Juan Ramirez",date:"2025-05-08",due:"2025-05-22",status:"Vencida",items:[{pid:2,name:"Donut Chocolate Frosted",qty:6,price:1.49}],tax:.18,disc:0,notes:""},
+  ],
+  movements: [
+    {id:1,date:"2025-05-10",type:"Entrada",pid:1,pname:"Donut Glazed Classic",qty:100,note:"Reabastecimiento semanal",user:"admin"},
+    {id:2,date:"2025-05-10",type:"Salida",pid:3,pname:"Donut Boston Cream",qty:38,note:"Venta del dia",user:"admin"},
+    {id:3,date:"2025-05-09",type:"Entrada",pid:6,pname:"Coffee Large Iced",qty:50,note:"Pedido de emergencia",user:"admin"},
+    {id:4,date:"2025-05-09",type:"Ajuste",pid:9,pname:"Coolatta Vanilla",qty:-60,note:"Producto descontinuado",user:"admin"},
+  ],
+  categories: ["Donuts","Munchkins","Bebidas","Panaderia","Sandwiches","Otros"],
+  suppliers: ["Dunkin Supply Co.","Arabica Beans LLC","Fresh Bake Partners","Daily Dairy","Otros"],
+};
+
+// ── UTILIDADES ────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const $$ = sel => document.querySelectorAll(sel);
+const fmt = n => "$" + (+n).toFixed(2);
+const fmtD = d => { if(!d)return"—"; const[y,m,day]=d.split("-"); return `${day}/${m}/${y}`; };
+const today = () => new Date().toISOString().split("T")[0];
+const uid = () => Date.now() + Math.floor(Math.random()*1000);
+const esc = s => String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+function invTotal(inv){
+  const sub = inv.items.reduce((s,i)=>s+i.qty*i.price,0);
+  const d = sub - (inv.disc||0);
+  return d + d*(inv.tax||0);
+}
+
+let toastTimer;
+function toast(msg, color="#2C2825"){
+  const t = $("toast");
+  t.textContent = msg;
+  t.style.background = color;
+  t.style.display = "block";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ t.style.display="none"; }, 3200);
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+const PAGES = [
+  {id:"dashboard",label:"Dashboard",icon:'<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>'},
+  {id:"inventory",label:"Inventario",icon:'<path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>'},
+  {id:"movements",label:"Movimientos",icon:'<path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>'},
+  {id:"invoices",label:"Facturacion",icon:'<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>'},
+  {id:"clients",label:"Clientes",icon:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>'},
+  {id:"reports",label:"Reportes",icon:'<path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>'},
+  {id:"sql",label:"SQL / Consola",icon:'<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>'},
+  {id:"settings",label:"Configuracion",icon:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>'},
+];
+
+function icon(d, size=16, color="currentColor"){
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+}
+
+let currentPage = "dashboard";
+
+function buildNav(){
+  const low = DB.products.filter(p=>p.stock<=p.min && p.active).length;
+  $("nav").innerHTML = PAGES.map(p=>`
+    <button class="nav-btn${p.id===currentPage?" active":""}" onclick="goto('${p.id}')">
+      ${icon(p.icon,16,p.id===currentPage?"#FF6B1A":"#A09990")}
+      ${p.label}
+      ${p.id==="inventory"&&low>0?`<span class="nav-badge">${low}</span>`:""}
+    </button>`).join("");
+}
+
+function goto(page){
+  currentPage = page;
+  buildNav();
+  render();
+}
+
+// ── RENDER ROUTER ─────────────────────────────────────────────────────────────
+function render(){
+  const m = $("main");
+  if(currentPage==="dashboard") m.innerHTML = pageDashboard();
+  else if(currentPage==="inventory") m.innerHTML = pageInventory();
+  else if(currentPage==="movements") m.innerHTML = pageMovements();
+  else if(currentPage==="invoices") m.innerHTML = pageInvoices();
+  else if(currentPage==="clients") m.innerHTML = pageClients();
+  else if(currentPage==="reports") m.innerHTML = pageReports();
+  else if(currentPage==="sql") m.innerHTML = pageSQL();
+  else if(currentPage==="settings") m.innerHTML = pageSettings();
+  bindEvents();
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+function pageDashboard(){
+  const low = DB.products.filter(p=>p.stock<=p.min&&p.active);
+  const paid = DB.invoices.filter(i=>i.status==="Pagada");
+  const pending = DB.invoices.filter(i=>i.status==="Pendiente");
+  const totalRev = paid.reduce((s,i)=>s+invTotal(i),0);
+  const totalPend = pending.reduce((s,i)=>s+invTotal(i),0);
+  const recentMov = [...DB.movements].reverse().slice(0,5);
+
+  const statCards = [
+    {label:"Ingresos Cobrados",val:fmt(totalRev),sub:`${paid.length} facturas pagadas`,color:"#2D7A3A"},
+    {label:"Por Cobrar",val:fmt(totalPend),sub:`${pending.length} facturas pendientes`,color:"#A0520A"},
+    {label:"Productos Activos",val:DB.products.filter(p=>p.active).length,sub:`${DB.products.length} total en sistema`,color:"#2B4CA0"},
+    {label:"Stock Bajo / Agotado",val:low.length,sub:"Requieren atencion",color:low.length>0?"#C0392B":"#2D7A3A"},
+  ];
+
+  return `
+  <div class="section-title" style="margin-bottom:4px">Dashboard</div>
+  <div style="font-size:13px;color:#A09990;margin-bottom:20px">${new Date().toLocaleDateString("es-DO",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}</div>
+
+  <div class="stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:22px">
+    ${statCards.map(s=>`
+    <div class="stat-card">
+      <div class="stat-label">${s.label}</div>
+      <div class="stat-value" style="color:${s.color}">${s.val}</div>
+      <div class="stat-sub">${s.sub}</div>
+    </div>`).join("")}
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px">
+    <div class="card">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;margin-bottom:13px">PRODUCTOS CON STOCK BAJO</div>
+      ${low.length===0?`<div class="empty">Todos los productos tienen stock suficiente.</div>`:`
+      <table><thead><tr><th>Producto</th><th>Stock</th><th>Minimo</th><th>Estado</th></tr></thead><tbody>
+      ${low.map(p=>`<tr>
+        <td style="font-weight:500">${esc(p.name)}</td>
+        <td style="font-weight:700;color:${p.stock===0?"#C0392B":"#A0520A"}">${p.stock} <span style="font-size:11px;color:#A09990">${p.unit}</span></td>
+        <td style="color:#A09990">${p.min}</td>
+        <td><span class="badge ${p.stock===0?"badge-danger":"badge-warning"}">${p.stock===0?"Agotado":"Bajo"}</span></td>
+      </tr>`).join("")}
+      </tbody></table>`}
+    </div>
+
+    <div class="card">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;margin-bottom:13px">MOVIMIENTOS RECIENTES</div>
+      <table><thead><tr><th>Fecha</th><th>Tipo</th><th>Producto</th><th>Cant.</th></tr></thead><tbody>
+      ${recentMov.map(m=>`<tr>
+        <td style="color:#A09990;font-size:12px">${fmtD(m.date)}</td>
+        <td><span class="badge ${m.type==="Entrada"?"badge-success":m.type==="Salida"?"badge-danger":"badge-info"}">${m.type}</span></td>
+        <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.pname)}</td>
+        <td style="font-weight:700;color:${m.type==="Entrada"?"#2D7A3A":"#C0392B"}">${m.type==="Entrada"?"+":"-"}${Math.abs(m.qty)}</td>
+      </tr>`).join("")}
+      </tbody></table>
+    </div>
+
+    <div class="card">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;margin-bottom:13px">FACTURAS RECIENTES</div>
+      <table><thead><tr><th>Num.</th><th>Cliente</th><th>Total</th><th>Estado</th></tr></thead><tbody>
+      ${[...DB.invoices].reverse().slice(0,5).map(inv=>`<tr>
+        <td style="font-weight:700;color:#FF6B1A">#${inv.id}</td>
+        <td>${esc(inv.clientName)}</td>
+        <td style="font-weight:700">${fmt(invTotal(inv))}</td>
+        <td><span class="badge ${inv.status==="Pagada"?"badge-success":inv.status==="Vencida"?"badge-danger":"badge-warning"}">${inv.status}</span></td>
+      </tr>`).join("")}
+      </tbody></table>
+    </div>
+
+    <div class="card">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;margin-bottom:13px">INVENTARIO POR CATEGORIA</div>
+      ${DB.categories.map(cat=>{
+        const ps = DB.products.filter(p=>p.cat===cat);
+        if(!ps.length) return "";
+        const stk = ps.reduce((s,p)=>s+p.stock,0);
+        const val = ps.reduce((s,p)=>s+p.stock*p.cost,0);
+        return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F2EFEC">
+          <div><span style="font-weight:500;font-size:13.5px">${esc(cat)}</span><span style="font-size:12px;color:#A09990;margin-left:7px">${ps.length} prod.</span></div>
+          <div style="text-align:right"><div style="font-weight:700;font-size:13.5px">${stk} uds.</div><div style="font-size:11px;color:#A09990">${fmt(val)}</div></div>
+        </div>`;
+      }).join("")}
+    </div>
+  </div>`;
+}
+
+// ── INVENTORY ─────────────────────────────────────────────────────────────────
+let invSearch="", invCat="Todas", invStatus="Todos";
+function pageInventory(){
+  let prods = DB.products;
+  if(invSearch) prods = prods.filter(p=>p.name.toLowerCase().includes(invSearch.toLowerCase())||p.sku.toLowerCase().includes(invSearch.toLowerCase()));
+  if(invCat!=="Todas") prods = prods.filter(p=>p.cat===invCat);
+  if(invStatus==="Activo") prods = prods.filter(p=>p.active);
+  if(invStatus==="Inactivo") prods = prods.filter(p=>!p.active);
+
+  return `
+  <div class="section-header">
+    <div class="section-title">INVENTARIO</div>
+    <button class="btn btn-primary" onclick="openProductModal()">
+      ${icon('<path d="M12 5v14M5 12h14"/>',14,"#fff")} Nuevo Producto
+    </button>
+  </div>
+  <div style="display:flex;gap:9px;margin-bottom:14px;flex-wrap:wrap">
+    <div class="search-wrap">
+      ${icon('<circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>',14)}
+      <input class="input" id="invSearch" value="${esc(invSearch)}" placeholder="Buscar nombre o SKU..." style="width:220px" oninput="invSearch=this.value;render()">
+    </div>
+    <select class="select" style="width:155px" onchange="invCat=this.value;render()">
+      <option ${invCat==="Todas"?"selected":""}>Todas</option>
+      ${DB.categories.map(c=>`<option ${invCat===c?"selected":""}>${c}</option>`).join("")}
+    </select>
+    <select class="select" style="width:120px" onchange="invStatus=this.value;render()">
+      ${["Todos","Activo","Inactivo"].map(s=>`<option ${invStatus===s?"selected":""}>${s}</option>`).join("")}
+    </select>
+  </div>
+  <div class="card-flush">
+    <table><thead><tr><th>SKU</th><th>Nombre</th><th>Categoria</th><th>Precio</th><th>Costo</th><th>Stock</th><th>Min.</th><th>Estado</th><th>Acciones</th></tr></thead>
+    <tbody>
+    ${prods.length===0?`<tr><td colspan="9" class="empty">No se encontraron productos</td></tr>`:""}
+    ${prods.map(p=>{
+      const sc = p.stock===0?"#C0392B":p.stock<=p.min?"#A0520A":"#2D7A3A";
+      return `<tr>
+        <td><span class="tag">${esc(p.sku)}</span></td>
+        <td style="font-weight:500">${esc(p.name)}</td>
+        <td style="color:#A09990">${esc(p.cat)}</td>
+        <td style="font-weight:600">${fmt(p.price)}</td>
+        <td style="color:#A09990">${fmt(p.cost)}</td>
+        <td><span style="font-weight:700;color:${sc}">${p.stock}</span> <span style="font-size:11px;color:#A09990">${p.unit}</span></td>
+        <td style="color:#A09990">${p.min}</td>
+        <td><span class="badge ${p.active?"badge-success":"badge-gray"}">${p.active?"Activo":"Inactivo"}</span></td>
+        <td>
+          <div style="display:flex;gap:3px">
+            <button class="btn-icon" title="Mover stock" onclick="openMovModal(${p.id})">${icon('<path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>',15,"#FF6B1A")}</button>
+            <button class="btn-icon" title="Editar" onclick="openProductModal(${p.id})">${icon('<path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>',15,"#756E67")}</button>
+            <button class="btn-icon" title="Eliminar" onclick="deleteProduct(${p.id})">${icon('<path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>',15,"#C0392B")}</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join("")}
+    </tbody></table>
+  </div>`;
+}
+
+function openProductModal(id){
+  const p = id ? DB.products.find(x=>x.id===id) : null;
+  const cats = DB.categories.map(c=>`<option ${p&&p.cat===c?"selected":""}>${c}</option>`).join("");
+  const sups = DB.suppliers.map(s=>`<option ${p&&p.supplier===s?"selected":""}>${s}</option>`).join("");
+  const units = ["pcs","box","cup","kg","lb","bag"].map(u=>`<option ${p&&p.unit===u?"selected":""}>${u}</option>`).join("");
+  showModal(`
+    <h2>${p?"Editar Producto":"Nuevo Producto"}</h2>
+    <div class="form-row">
+      <div class="form-group"><label>SKU</label><input class="input" id="f_sku" value="${esc(p?p.sku:"DK-"+(DB.products.length+1).toString().padStart(3,"0"))}"></div>
+      <div class="form-group"><label>Categoria</label><select class="select" id="f_cat">${cats}</select></div>
+    </div>
+    <div class="form-group"><label>Nombre del Producto *</label><input class="input" id="f_name" value="${esc(p?p.name:"")}"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Precio de Venta *</label><input class="input" type="number" step="0.01" id="f_price" value="${p?p.price:""}"></div>
+      <div class="form-group"><label>Costo</label><input class="input" type="number" step="0.01" id="f_cost" value="${p?p.cost:""}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Stock ${p?"Actual":"Inicial"} *</label><input class="input" type="number" id="f_stock" value="${p?p.stock:""}"></div>
+      <div class="form-group"><label>Stock Minimo</label><input class="input" type="number" id="f_min" value="${p?p.min:""}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Unidad</label><select class="select" id="f_unit">${units}</select></div>
+      <div class="form-group"><label>Proveedor</label><select class="select" id="f_sup">${sups}</select></div>
+    </div>
+    <label class="form-check"><input type="checkbox" id="f_active" ${!p||p.active?"checked":""}> Producto activo</label>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveProduct(${p?p.id:0})">${p?"Guardar":"Agregar Producto"}</button>
+    </div>
+  `);
+}
+
+function saveProduct(id){
+  const name = $("f_name").value.trim();
+  const price = +$("f_price").value;
+  if(!name||!price){ toast("Nombre y precio son requeridos.","#C0392B"); return; }
+  const obj = {
+    id: id||uid(), sku:$("f_sku").value.trim(), name, cat:$("f_cat").value,
+    price, cost:+$("f_cost").value, stock:+$("f_stock").value,
+    min:+$("f_min").value, unit:$("f_unit").value,
+    supplier:$("f_sup").value, active:$("f_active").checked
+  };
+  if(id){ const i=DB.products.findIndex(p=>p.id===id); DB.products[i]=obj; toast("Producto actualizado."); }
+  else { DB.products.push(obj); toast("Producto agregado."); }
+  closeModal(); render();
+}
+
+function deleteProduct(id){
+  if(!confirm("Eliminar este producto?")) return;
+  DB.products = DB.products.filter(p=>p.id!==id);
+  toast("Producto eliminado."); render();
+}
+
+function openMovModal(id){
+  const p = DB.products.find(x=>x.id===id);
+  showModal(`
+    <h2>Registrar Movimiento</h2>
+    <div style="background:#FAF9F8;border-radius:7px;padding:10px 13px;margin-bottom:14px;font-size:13.5px">
+      <strong>${esc(p.name)}</strong> — Stock actual: <strong style="color:#FF6B1A">${p.stock} ${p.unit}</strong>
+    </div>
+    <div class="form-group"><label>Tipo</label>
+      <div style="display:flex;gap:7px" id="movType">
+        ${["Entrada","Salida","Ajuste"].map((t,i)=>`
+        <button onclick="selectMovType('${t}')" id="mt_${t}" class="btn ${i===0?"btn-primary":"btn-ghost"}" style="flex:1">${t}</button>`).join("")}
+      </div>
+    </div>
+    <div class="form-group"><label>Cantidad *</label><input class="input" type="number" min="1" id="mov_qty" placeholder="Ej: 50"></div>
+    <div class="form-group"><label>Nota / Razon</label><input class="input" id="mov_note" placeholder="Ej: Reabastecimiento semanal"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveMov(${id})">Registrar</button>
+    </div>
+  `);
+  window._movType = "Entrada";
+}
+
+function selectMovType(t){
+  window._movType = t;
+  ["Entrada","Salida","Ajuste"].forEach(x=>{
+    const b = $("mt_"+x);
+    b.className = "btn "+(x===t?"btn-primary":"btn-ghost");
+    b.style.flex = "1";
+  });
+}
+
+function saveMov(pid){
+  const qty = +$("mov_qty").value;
+  if(!qty||qty<=0){ toast("Ingresa una cantidad valida.","#C0392B"); return; }
+  const type = window._movType||"Entrada";
+  const delta = type==="Entrada" ? qty : -qty;
+  const p = DB.products.find(x=>x.id===pid);
+  p.stock = Math.max(0, p.stock+delta);
+  DB.movements.unshift({id:uid(),date:today(),type,pid,pname:p.name,qty:type==="Entrada"?qty:-qty,note:$("mov_note").value,user:"admin"});
+  toast(`${type} de ${qty} ${p.unit} registrada.`);
+  closeModal(); render();
+}
+
+// ── MOVEMENTS ─────────────────────────────────────────────────────────────────
+let movFilter="Todos";
+function pageMovements(){
+  let movs = movFilter==="Todos" ? DB.movements : DB.movements.filter(m=>m.type===movFilter);
+  return `
+  <div class="section-header">
+    <div class="section-title">HISTORIAL DE MOVIMIENTOS</div>
+    <div class="filter-tabs">
+      ${["Todos","Entrada","Salida","Ajuste"].map(f=>`<button class="filter-tab${movFilter===f?" active":""}" onclick="movFilter='${f}';render()">${f}</button>`).join("")}
+    </div>
+  </div>
+  <div class="card-flush">
+    <table><thead><tr><th>Fecha</th><th>Tipo</th><th>Producto</th><th>Cantidad</th><th>Nota</th><th>Usuario</th></tr></thead>
+    <tbody>
+    ${movs.length===0?`<tr><td colspan="6" class="empty">No hay movimientos registrados</td></tr>`:""}
+    ${movs.map(m=>`<tr>
+      <td style="color:#A09990;font-size:12px">${fmtD(m.date)}</td>
+      <td><span class="badge ${m.type==="Entrada"?"badge-success":m.type==="Salida"?"badge-danger":"badge-info"}">${m.type}</span></td>
+      <td style="font-weight:500">${esc(m.pname)}</td>
+      <td style="font-weight:700;color:${m.qty>0?"#2D7A3A":"#C0392B"}">${m.qty>0?"+":""}${m.qty}</td>
+      <td style="color:#A09990">${esc(m.note)||"—"}</td>
+      <td><span class="tag">${esc(m.user)}</span></td>
+    </tr>`).join("")}
+    </tbody></table>
+  </div>`;
+}
+
+// ── INVOICES ──────────────────────────────────────────────────────────────────
+let invFilter2="Todos", invSearch2="";
+function pageInvoices(){
+  let invs = DB.invoices;
+  if(invFilter2!=="Todos") invs=invs.filter(i=>i.status===invFilter2);
+  if(invSearch2) invs=invs.filter(i=>i.clientName.toLowerCase().includes(invSearch2.toLowerCase())||String(i.id).includes(invSearch2));
+  return `
+  <div class="section-header">
+    <div class="section-title">FACTURACION</div>
+    <button class="btn btn-primary" onclick="openInvModal()">
+      ${icon('<path d="M12 5v14M5 12h14"/>',14,"#fff")} Nueva Factura
+    </button>
+  </div>
+  <div style="display:flex;gap:9px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+    <div class="search-wrap">
+      ${icon('<circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>',14)}
+      <input class="input" value="${esc(invSearch2)}" placeholder="Buscar factura o cliente..." style="width:220px" oninput="invSearch2=this.value;render()">
+    </div>
+    <div class="filter-tabs">
+      ${["Todos","Pendiente","Pagada","Vencida"].map(f=>`<button class="filter-tab${invFilter2===f?" active":""}" onclick="invFilter2='${f}';render()">${f}</button>`).join("")}
+    </div>
+  </div>
+  <div class="card-flush">
+    <table><thead><tr><th>Num.</th><th>Cliente</th><th>Fecha</th><th>Vence</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead>
+    <tbody>
+    ${invs.length===0?`<tr><td colspan="7" class="empty">No se encontraron facturas</td></tr>`:""}
+    ${invs.map(inv=>`<tr>
+      <td style="font-weight:700;color:#FF6B1A">#${inv.id}</td>
+      <td style="font-weight:500">${esc(inv.clientName)}</td>
+      <td style="color:#A09990;font-size:12px">${fmtD(inv.date)}</td>
+      <td style="color:#A09990;font-size:12px">${fmtD(inv.due)}</td>
+      <td style="font-weight:700">${fmt(invTotal(inv))}</td>
+      <td><span class="badge ${inv.status==="Pagada"?"badge-success":inv.status==="Vencida"?"badge-danger":"badge-warning"}">${inv.status}</span></td>
+      <td>
+        <div style="display:flex;gap:3px">
+          <button class="btn-icon" title="Ver detalle" onclick="viewInvoice(${inv.id})">${icon('<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>',15,"#756E67")}</button>
+          ${inv.status!=="Pagada"?`<button class="btn-icon" title="Marcar pagada" onclick="markPaid(${inv.id})">${icon('<path d="M5 13l4 4L19 7"/>',15,"#2D7A3A")}</button>`:""}
+          <button class="btn-icon" title="Eliminar" onclick="deleteInv(${inv.id})">${icon('<path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>',15,"#C0392B")}</button>
+        </div>
+      </td>
+    </tr>`).join("")}
+    </tbody></table>
+  </div>`;
+}
+
+function openInvModal(){
+  const nextId = Math.max(...DB.invoices.map(i=>i.id),1000)+1;
+  const clientOpts = DB.clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("");
+  showModal(`
+    <h2>Nueva Factura #${nextId}</h2>
+    <div class="form-row">
+      <div class="form-group"><label>Cliente *</label><select class="select" id="inv_client">${clientOpts}</select></div>
+      <div class="form-group"><label>Fecha Vencimiento</label><input class="input" type="date" id="inv_due" value="${today()}"></div>
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#756E67;margin:10px 0 7px">Productos</div>
+    <div id="inv_items"></div>
+    <button class="btn btn-ghost" style="font-size:12.5px;padding:5px 12px;margin-bottom:12px" onclick="addInvItem()">+ Agregar producto</button>
+    <div class="form-row">
+      <div class="form-group"><label>Descuento ($)</label><input class="input" type="number" step="0.01" id="inv_disc" value="0" oninput="updateInvTotals()"></div>
+      <div class="form-group"><label>ITBIS</label><select class="select" id="inv_tax" onchange="updateInvTotals()">
+        <option value="0">0%</option><option value="0.16">16%</option><option value="0.18" selected>18%</option>
+      </select></div>
+    </div>
+    <div style="background:#FAF9F8;border-radius:7px;padding:11px 13px;margin-bottom:13px;font-size:13.5px" id="inv_totals">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:#A09990">Subtotal</span><span id="it_sub">$0.00</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:#A09990">ITBIS</span><span id="it_tax">$0.00</span></div>
+      <div style="height:1px;background:#E4DFD9;margin:7px 0"></div>
+      <div style="display:flex;justify-content:space-between;font-weight:700;font-size:16px"><span>Total</span><span style="color:#FF6B1A" id="it_total">$0.00</span></div>
+    </div>
+    <div class="form-group"><label>Notas</label><textarea class="input" id="inv_notes" rows="2" style="resize:vertical"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveInvoice(${nextId})">Crear Factura</button>
+    </div>
+  `, true);
+  window._invItems = [];
+  addInvItem();
+}
+
+function addInvItem(){
+  const p = DB.products.filter(x=>x.active)[0];
+  if(!p) return;
+  window._invItems = window._invItems||[];
+  window._invItems.push({pid:p.id,name:p.name,qty:1,price:p.price});
+  renderInvItems();
+}
+
+function renderInvItems(){
+  const prodOpts = DB.products.filter(x=>x.active).map(p=>`<option value="${p.id}">${esc(p.name)} — ${fmt(p.price)}</option>`).join("");
+  $("inv_items").innerHTML = (window._invItems||[]).map((item,i)=>`
+    <div style="display:grid;grid-template-columns:1fr 70px 90px 28px;gap:6px;margin-bottom:6px;align-items:center">
+      <select class="select" style="font-size:12.5px" onchange="updateInvItem(${i},'pid',this.value)">${prodOpts.replace(`value="${item.pid}"`,`value="${item.pid}" selected`)}</select>
+      <input class="input" type="number" min="1" value="${item.qty}" style="font-size:12.5px" onchange="updateInvItem(${i},'qty',this.value)" oninput="updateInvItem(${i},'qty',this.value)">
+      <input class="input" type="number" step="0.01" value="${item.price}" style="font-size:12.5px" onchange="updateInvItem(${i},'price',this.value)" oninput="updateInvItem(${i},'price',this.value)">
+      <button class="btn-icon" onclick="removeInvItem(${i})">${icon('<path d="M18 6L6 18M6 6l12 12"/>',14,"#C0392B")}</button>
+    </div>`).join("");
+  updateInvTotals();
+}
+
+function updateInvItem(i,field,val){
+  if(!window._invItems) return;
+  if(field==="pid"){
+    const p=DB.products.find(x=>x.id===+val);
+    if(p){ window._invItems[i].pid=p.id; window._invItems[i].name=p.name; window._invItems[i].price=p.price; }
+  } else {
+    window._invItems[i][field] = +val;
+  }
+  updateInvTotals();
+}
+
+function removeInvItem(i){
+  window._invItems.splice(i,1);
+  renderInvItems();
+}
+
+function updateInvTotals(){
+  const items = window._invItems||[];
+  const sub = items.reduce((s,i)=>s+(+i.qty||0)*(+i.price||0),0);
+  const disc = +($("inv_disc")?$("inv_disc").value:0);
+  const tax = +($("inv_tax")?$("inv_tax").value:.18);
+  const d = sub-disc; const total = d+d*tax;
+  if($("it_sub")) $("it_sub").textContent = fmt(sub);
+  if($("it_tax")) $("it_tax").textContent = fmt(d*tax);
+  if($("it_total")) $("it_total").textContent = fmt(total);
+}
+
+function saveInvoice(newId){
+  const cid = +$("inv_client").value;
+  const client = DB.clients.find(c=>c.id===cid);
+  const items = window._invItems||[];
+  if(!items.length){ toast("Agrega al menos un producto.","#C0392B"); return; }
+  DB.invoices.unshift({
+    id:newId, clientId:cid, clientName:client?client.name:"Desconocido",
+    date:today(), due:$("inv_due").value||today(), status:"Pendiente",
+    items:items.map(i=>({pid:i.pid,name:i.name,qty:+i.qty,price:+i.price})),
+    tax:+$("inv_tax").value, disc:+$("inv_disc").value, notes:$("inv_notes").value
+  });
+  toast(`Factura #${newId} creada.`);
+  closeModal(); render();
+}
+
+function markPaid(id){
+  const inv = DB.invoices.find(i=>i.id===id);
+  if(inv){ inv.status="Pagada"; toast("Factura marcada como pagada.","#2D7A3A"); render(); }
+}
+
+function deleteInv(id){
+  if(!confirm("Eliminar esta factura?")) return;
+  DB.invoices = DB.invoices.filter(i=>i.id!==id);
+  toast("Factura eliminada."); render();
+}
+
+function viewInvoice(id){
+  const inv = DB.invoices.find(i=>i.id===id);
+  const sub = inv.items.reduce((s,i)=>s+i.qty*i.price,0);
+  const d = sub-(inv.disc||0);
+  const total = d+d*(inv.tax||0);
+  showModal(`
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+      <div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:24px;color:#FF6B1A">DUNKIN</div>
+        <div style="font-size:12px;color:#A09990">Azua, Rep. Dominicana</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:19px;font-weight:700">FACTURA #${inv.id}</div>
+        <span class="badge ${inv.status==="Pagada"?"badge-success":inv.status==="Vencida"?"badge-danger":"badge-warning"}">${inv.status}</span>
+      </div>
+    </div>
+    <div style="height:1px;background:#E4DFD9;margin-bottom:13px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;font-size:13px">
+      <div><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#A09990;margin-bottom:2px">Cliente</div><div style="font-weight:600">${esc(inv.clientName)}</div></div>
+      <div><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#A09990;margin-bottom:2px">Fechas</div><div>Emision: ${fmtD(inv.date)}</div><div style="color:#A09990">Vence: ${fmtD(inv.due)}</div></div>
+    </div>
+    <table style="margin-bottom:14px">
+      <thead><tr><th>Producto</th><th>Cant.</th><th>Precio</th><th>Total</th></tr></thead>
+      <tbody>${inv.items.map(i=>`<tr>
+        <td>${esc(i.name)}</td><td>${i.qty}</td><td>${fmt(i.price)}</td><td style="font-weight:600">${fmt(i.qty*i.price)}</td>
+      </tr>`).join("")}</tbody>
+    </table>
+    <div style="background:#FAF9F8;border-radius:7px;padding:11px 13px;font-size:13px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:#A09990">Subtotal</span><span>${fmt(sub)}</span></div>
+      ${inv.disc>0?`<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:#A09990">Descuento</span><span style="color:#C0392B">-${fmt(inv.disc)}</span></div>`:""}
+      <div style="display:flex;justify-content:space-between;margin-bottom:7px"><span style="color:#A09990">ITBIS (${((inv.tax||0)*100).toFixed(0)}%)</span><span>${fmt(d*(inv.tax||0))}</span></div>
+      <div style="height:1px;background:#E4DFD9;margin-bottom:7px"></div>
+      <div style="display:flex;justify-content:space-between;font-weight:700;font-size:16px"><span>TOTAL</span><span style="color:#FF6B1A">${fmt(total)}</span></div>
+    </div>
+    ${inv.notes?`<div style="font-size:12px;color:#A09990;margin-top:10px"><strong>Notas:</strong> ${esc(inv.notes)}</div>`:""}
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cerrar</button>
+      <button class="btn btn-primary no-print" onclick="window.print()">Imprimir</button>
+    </div>
+  `);
+}
+
+// ── CLIENTS ───────────────────────────────────────────────────────────────────
+let cliSearch="";
+function pageClients(){
+  let cls = DB.clients;
+  if(cliSearch) cls=cls.filter(c=>c.name.toLowerCase().includes(cliSearch.toLowerCase())||c.email.toLowerCase().includes(cliSearch.toLowerCase()));
+  return `
+  <div class="section-header">
+    <div class="section-title">CLIENTES</div>
+    <button class="btn btn-primary" onclick="openClientModal()">
+      ${icon('<path d="M12 5v14M5 12h14"/>',14,"#fff")} Nuevo Cliente
+    </button>
+  </div>
+  <div class="search-wrap" style="margin-bottom:14px">
+    ${icon('<circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>',14)}
+    <input class="input" value="${esc(cliSearch)}" placeholder="Buscar cliente..." style="width:250px" oninput="cliSearch=this.value;render()">
+  </div>
+  <div class="card-flush">
+    <table><thead><tr><th>Nombre</th><th>Email</th><th>Telefono</th><th>Tipo</th><th>Direccion</th><th>Acciones</th></tr></thead>
+    <tbody>
+    ${cls.length===0?`<tr><td colspan="6" class="empty">No se encontraron clientes</td></tr>`:""}
+    ${cls.map(c=>`<tr>
+      <td style="font-weight:600">${esc(c.name)}</td>
+      <td style="color:#A09990">${esc(c.email)}</td>
+      <td style="color:#A09990">${esc(c.phone)}</td>
+      <td><span class="badge ${c.type==="Corporativo"?"badge-info":c.type==="VIP"?"badge-warning":"badge-gray"}">${c.type}</span></td>
+      <td style="color:#A09990;font-size:12px">${esc(c.address)}</td>
+      <td>
+        <div style="display:flex;gap:3px">
+          <button class="btn-icon" onclick="openClientModal(${c.id})">${icon('<path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>',15,"#756E67")}</button>
+          <button class="btn-icon" onclick="deleteClient(${c.id})">${icon('<path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>',15,"#C0392B")}</button>
+        </div>
+      </td>
+    </tr>`).join("")}
+    </tbody></table>
+  </div>`;
+}
+
+function openClientModal(id){
+  const c = id ? DB.clients.find(x=>x.id===id) : null;
+  showModal(`
+    <h2>${c?"Editar Cliente":"Nuevo Cliente"}</h2>
+    <div class="form-group"><label>Nombre Completo *</label><input class="input" id="c_name" value="${esc(c?c.name:"")}"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Email</label><input class="input" id="c_email" value="${esc(c?c.email:"")}"></div>
+      <div class="form-group"><label>Telefono</label><input class="input" id="c_phone" value="${esc(c?c.phone:"")}"></div>
+    </div>
+    <div class="form-group"><label>Direccion</label><input class="input" id="c_addr" value="${esc(c?c.address:"")}"></div>
+    <div class="form-group"><label>Tipo</label>
+      <select class="select" id="c_type">
+        ${["Regular","Corporativo","VIP"].map(t=>`<option ${c&&c.type===t?"selected":""}>${t}</option>`).join("")}
+      </select>
+    </div>
+    <div class="form-group"><label>Notas</label><textarea class="input" id="c_notes" rows="2" style="resize:vertical">${esc(c?c.notes:"")}</textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveClient(${c?c.id:0})">${c?"Guardar":"Agregar"}</button>
+    </div>
+  `);
+}
+
+function saveClient(id){
+  const name = $("c_name").value.trim();
+  if(!name){ toast("El nombre es requerido.","#C0392B"); return; }
+  const obj = {id:id||uid(),name,email:$("c_email").value,phone:$("c_phone").value,address:$("c_addr").value,type:$("c_type").value,notes:$("c_notes").value};
+  if(id){ const i=DB.clients.findIndex(c=>c.id===id); DB.clients[i]=obj; toast("Cliente actualizado."); }
+  else { DB.clients.push(obj); toast("Cliente agregado."); }
+  closeModal(); render();
+}
+
+function deleteClient(id){
+  if(!confirm("Eliminar este cliente?")) return;
+  DB.clients = DB.clients.filter(c=>c.id!==id);
+  toast("Cliente eliminado."); render();
+}
+
+// ── REPORTS ───────────────────────────────────────────────────────────────────
+function pageReports(){
+  const paid=DB.invoices.filter(i=>i.status==="Pagada");
+  const pend=DB.invoices.filter(i=>i.status==="Pendiente");
+  const venc=DB.invoices.filter(i=>i.status==="Vencida");
+  const rev=paid.reduce((s,i)=>s+invTotal(i),0);
+  const pendAmt=pend.reduce((s,i)=>s+invTotal(i),0);
+  const vencAmt=venc.reduce((s,i)=>s+invTotal(i),0);
+  const invVal=DB.products.reduce((s,p)=>s+p.stock*p.cost,0);
+  const invRet=DB.products.reduce((s,p)=>s+p.stock*p.price,0);
+
+  return `
+  <div class="section-title" style="margin-bottom:20px">REPORTES Y ESTADISTICAS</div>
+  <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+    ${[
+      {l:"Ingresos Cobrados",v:fmt(rev),sub:`${paid.length} facturas`,c:"#2D7A3A"},
+      {l:"Por Cobrar",v:fmt(pendAmt),sub:`${pend.length} facturas`,c:"#A0520A"},
+      {l:"Facturas Vencidas",v:fmt(vencAmt),sub:`${venc.length} facturas`,c:"#C0392B"},
+      {l:"Valor Inventario (costo)",v:fmt(invVal),sub:"Precio de costo",c:"#2B4CA0"},
+      {l:"Valor Inventario (venta)",v:fmt(invRet),sub:"Precio de venta",c:"#FF6B1A"},
+      {l:"Margen Potencial",v:fmt(invRet-invVal),sub:`${invVal>0?(((invRet-invVal)/invRet)*100).toFixed(1):0}% margen`,c:"#DA1884"},
+    ].map(s=>`<div class="stat-card"><div class="stat-label">${s.l}</div><div class="stat-value" style="font-size:22px;color:${s.c}">${s.v}</div><div class="stat-sub">${s.sub}</div></div>`).join("")}
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px">
+    <div class="card">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;margin-bottom:13px">INVENTARIO POR CATEGORIA</div>
+      <table><thead><tr><th>Categoria</th><th>Productos</th><th>Stock</th><th>Valor</th></tr></thead><tbody>
+      ${DB.categories.map(cat=>{
+        const ps=DB.products.filter(p=>p.cat===cat);
+        if(!ps.length)return"";
+        return `<tr><td style="font-weight:500">${esc(cat)}</td><td style="color:#A09990">${ps.length}</td><td>${ps.reduce((s,p)=>s+p.stock,0)}</td><td style="font-weight:600">${fmt(ps.reduce((s,p)=>s+p.stock*p.cost,0))}</td></tr>`;
+      }).join("")}
+      </tbody></table>
+    </div>
+    <div class="card">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;margin-bottom:13px">ESTADO DE FACTURACION</div>
+      ${[["Pagada",paid,rev,"#2D7A3A"],["Pendiente",pend,pendAmt,"#A0520A"],["Vencida",venc,vencAmt,"#C0392B"]].map(([s,arr,amt,c])=>{
+        const pct=DB.invoices.length?Math.round(arr.length/DB.invoices.length*100):0;
+        return `<div style="margin-bottom:13px">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
+            <span style="font-weight:500">${s}</span>
+            <span style="color:#A09990">${arr.length} facturas — ${fmt(amt)}</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${c}"></div></div>
+        </div>`;
+      }).join("")}
+      <div style="height:1px;background:#E4DFD9;margin:10px 0"></div>
+      <div style="display:flex;justify-content:space-between;font-weight:700;font-size:15px">
+        <span>Total General</span><span style="color:#FF6B1A">${fmt(DB.invoices.reduce((s,i)=>s+invTotal(i),0))}</span>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;margin-bottom:13px">TOP 5 PRODUCTOS POR VALOR</div>
+      <table><thead><tr><th>Producto</th><th>Stock</th><th>Costo</th><th>Valor</th></tr></thead><tbody>
+      ${[...DB.products].sort((a,b)=>b.stock*b.cost-a.stock*a.cost).slice(0,5).map(p=>`<tr>
+        <td style="font-weight:500;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.name)}</td>
+        <td>${p.stock}</td><td style="color:#A09990">${fmt(p.cost)}</td>
+        <td style="font-weight:700">${fmt(p.stock*p.cost)}</td>
+      </tr>`).join("")}
+      </tbody></table>
+    </div>
+    <div class="card">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;margin-bottom:13px">CLIENTES POR TIPO</div>
+      ${["Regular","Corporativo","VIP"].map(type=>{
+        const cls=DB.clients.filter(c=>c.type===type);
+        const amt=DB.invoices.filter(i=>cls.find(c=>c.id===i.clientId)).reduce((s,i)=>s+invTotal(i),0);
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F2EFEC">
+          <div><span class="badge ${type==="Corporativo"?"badge-info":type==="VIP"?"badge-warning":"badge-gray"}">${type}</span>
+          <span style="font-size:12px;color:#A09990;margin-left:7px">${cls.length} clientes</span></div>
+          <span style="font-weight:700;font-size:14px">${fmt(amt)}</span>
+        </div>`;
+      }).join("")}
+    </div>
+  </div>`;
+}
+
+// ── SQL CONSOLE ───────────────────────────────────────────────────────────────
+function pageSQL(){
+  const schema = `-- DUNKIN AZUA — SCHEMA SQL
+-- Copia este schema para crear tu base de datos real.
+
+CREATE TABLE products (
+  id         INT PRIMARY KEY AUTO_INCREMENT,
+  sku        VARCHAR(20) NOT NULL UNIQUE,
+  name       VARCHAR(100) NOT NULL,
+  cat        VARCHAR(50),
+  price      DECIMAL(10,2) NOT NULL,
+  cost       DECIMAL(10,2),
+  stock      INT NOT NULL DEFAULT 0,
+  min        INT DEFAULT 0,
+  unit       VARCHAR(20),
+  supplier   VARCHAR(100),
+  active     BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE clients (
+  id         INT PRIMARY KEY AUTO_INCREMENT,
+  name       VARCHAR(100) NOT NULL,
+  email      VARCHAR(100),
+  phone      VARCHAR(30),
+  address    TEXT,
+  type       ENUM('Regular','Corporativo','VIP') DEFAULT 'Regular',
+  notes      TEXT
+);
+
+CREATE TABLE invoices (
+  id         INT PRIMARY KEY AUTO_INCREMENT,
+  client_id  INT,
+  date       DATE,
+  due        DATE,
+  status     ENUM('Pendiente','Pagada','Vencida') DEFAULT 'Pendiente',
+  tax        DECIMAL(5,4) DEFAULT 0.18,
+  disc       DECIMAL(10,2) DEFAULT 0,
+  notes      TEXT,
+  FOREIGN KEY (client_id) REFERENCES clients(id)
+);
+
+CREATE TABLE invoice_items (
+  id         INT PRIMARY KEY AUTO_INCREMENT,
+  invoice_id INT,
+  product_id INT,
+  qty        INT NOT NULL,
+  price      DECIMAL(10,2) NOT NULL
+);
+
+CREATE TABLE movements (
+  id         INT PRIMARY KEY AUTO_INCREMENT,
+  date       DATE,
+  type       ENUM('Entrada','Salida','Ajuste'),
+  product_id INT,
+  qty        INT,
+  note       TEXT,
+  user       VARCHAR(50)
+);`;
+
+  return `
+  <div class="section-title" style="margin-bottom:5px">SQL / CONSOLA</div>
+  <p style="font-size:13.5px;color:#A09990;margin-bottom:18px">Ejecuta consultas SQL que se reflejan en tiempo real en el sistema. Operaciones disponibles: SELECT, INSERT INTO products, UPDATE products SET stock, DELETE FROM products.</p>
+  <div style="display:flex;gap:8px;margin-bottom:16px">
+    <button class="filter-tab active" id="tab_console" onclick="switchSqlTab('console')">Consola SQL</button>
+    <button class="filter-tab" id="tab_schema" onclick="switchSqlTab('schema')">Ver Schema</button>
+    <button class="filter-tab" id="tab_export" onclick="switchSqlTab('export')">Exportar INSERTs</button>
+  </div>
+  <div id="sql_console">
+    <div class="sql-bar">
+      <div style="display:flex;align-items:center;gap:8px">
+        ${icon('<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>',14,"#A09990")}
+        <span style="font-size:12px;color:#A09990;font-weight:600;letter-spacing:.5px">DUNKIN_AZUA — CONSOLA SQL</span>
+      </div>
+      <button onclick="$('sql_ed').value='';$('sql_res').innerHTML=''" style="background:none;border:none;color:#756E67;cursor:pointer;font-size:12px;font-weight:600">Limpiar</button>
+    </div>
+    <textarea id="sql_ed" class="sql-editor" placeholder="Ejemplos:
+
+SELECT * FROM products;
+
+SELECT * FROM clients;
+
+INSERT INTO products (sku, name, cat, price, cost, stock, min, unit, supplier)
+VALUES ('DK-011', 'Donut Fresa', 'Donuts', 1.49, 0.55, 80, 30, 'pcs', 'Dunkin Supply Co.');
+
+UPDATE products SET stock = 150 WHERE sku = 'DK-001';
+
+DELETE FROM products WHERE sku = 'DK-011';"></textarea>
+    <div style="display:flex;gap:8px;margin:10px 0">
+      <button class="btn btn-primary" onclick="runSQL()">Ejecutar</button>
+      <button class="btn btn-ghost" onclick="$('sql_ed').value=''">Limpiar editor</button>
+    </div>
+    <div id="sql_res"></div>
+  </div>
+  <div id="sql_schema" style="display:none">
+    <div class="sql-bar"><span style="font-size:12px;color:#A09990;font-weight:600">SCHEMA — dunkin_azua.sql</span>
+      <button onclick="navigator.clipboard.writeText(document.getElementById('sql_schema_pre').textContent);toast('Schema copiado.')" style="background:none;border:none;color:#756E67;cursor:pointer;font-size:12px;font-weight:600">Copiar</button>
+    </div>
+    <pre id="sql_schema_pre" style="background:#1E1C1A;color:#B8D5A0;font-size:12px;padding:16px;border-radius:0 0 8px 8px;overflow-x:auto;white-space:pre-wrap;line-height:1.7;max-height:480px;overflow-y:auto">${esc(schema)}</pre>
+  </div>
+  <div id="sql_export" style="display:none">
+    <div class="sql-bar"><span style="font-size:12px;color:#A09990;font-weight:600">EXPORT — datos actuales como INSERTs</span>
+      <button onclick="copyExport()" style="background:none;border:none;color:#756E67;cursor:pointer;font-size:12px;font-weight:600">Copiar</button>
+    </div>
+    <pre id="sql_export_pre" style="background:#1E1C1A;color:#B8D5A0;font-size:12px;padding:16px;border-radius:0 0 8px 8px;overflow-x:auto;white-space:pre-wrap;line-height:1.7;max-height:480px;overflow-y:auto"></pre>
+  </div>`;
+}
+
+function switchSqlTab(tab){
+  ["console","schema","export"].forEach(t=>{
+    const el = $("sql_"+t);
+    const btn = $("tab_"+t);
+    if(el) el.style.display = t===tab?"block":"none";
+    if(btn) btn.className = "filter-tab"+(t===tab?" active":"");
+  });
+  if(tab==="export"){
+    const lines = [
+      "-- PRODUCTOS",
+      ...DB.products.map(p=>`INSERT INTO products (sku, name, cat, price, cost, stock, min, unit, supplier, active) VALUES ('${p.sku}', '${p.name}', '${p.cat}', ${p.price}, ${p.cost}, ${p.stock}, ${p.min}, '${p.unit}', '${p.supplier}', ${p.active?1:0});`),
+      "","-- CLIENTES",
+      ...DB.clients.map(c=>`INSERT INTO clients (name, email, phone, address, type) VALUES ('${c.name}', '${c.email}', '${c.phone}', '${c.address}', '${c.type}');`),
+    ];
+    $("sql_export_pre").textContent = lines.join("\n");
+  }
+}
+
+function copyExport(){
+  const t = $("sql_export_pre");
+  if(t){ navigator.clipboard.writeText(t.textContent); toast("INSERTs copiados."); }
+}
+
+function runSQL(){
+  const raw = $("sql_ed").value.trim();
+  const res = $("sql_res");
+  if(!raw){ res.innerHTML=""; return; }
+  const q = raw.toUpperCase().replace(/\s+/g," ").trim();
+
+  try {
+    if(q.startsWith("SELECT")){
+      let rows, cols;
+      if(q.includes("FROM PRODUCTS")){
+        cols=["id","sku","name","cat","price","cost","stock","min","unit","active"];
+        rows=DB.products.map(p=>[p.id,p.sku,p.name,p.cat,fmt(p.price),fmt(p.cost),p.stock,p.min,p.unit,p.active?"SI":"NO"]);
+      } else if(q.includes("FROM CLIENTS")){
+        cols=["id","name","email","phone","type"];
+        rows=DB.clients.map(c=>[c.id,c.name,c.email,c.phone,c.type]);
+      } else if(q.includes("FROM INVOICES")){
+        cols=["id","cliente","fecha","total","status"];
+        rows=DB.invoices.map(i=>[i.id,i.clientName,i.date,fmt(invTotal(i)),i.status]);
+      } else if(q.includes("FROM MOVEMENTS")){
+        cols=["id","fecha","tipo","producto","qty","nota"];
+        rows=DB.movements.map(m=>[m.id,m.date,m.type,m.pname,m.qty,m.note||""]);
+      } else {
+        throw new Error("Tabla no reconocida. Tablas: products, clients, invoices, movements");
+      }
+      res.innerHTML = `<div class="sql-result">
+        <div style="padding:8px 13px;background:#FAF9F8;font-size:12px;color:#A09990;font-weight:600">${rows.length} resultado(s)</div>
+        <div style="overflow-x:auto"><table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join("")}</tr></thead>
+        <tbody>${rows.map(r=>`<tr>${r.map(c=>`<td style="font-family:monospace;font-size:12.5px">${esc(String(c))}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+      </div>`;
+
+    } else if(q.startsWith("INSERT INTO PRODUCTS")){
+      const m = raw.match(/VALUES\s*\(\s*'([^']*)'\s*,\s*'([^']*)'\s*,\s*'([^']*)'\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*'([^']*)'\s*,\s*'([^']*)'/i);
+      if(!m) throw new Error("Formato incorrecto.\nEjemplo: INSERT INTO products (sku, name, cat, price, cost, stock, min, unit, supplier)\nVALUES ('DK-011', 'Donut Fresa', 'Donuts', 1.49, 0.55, 80, 30, 'pcs', 'Dunkin Supply Co.');");
+      const [,sku,name,cat,price,cost,stock,min,unit,supplier] = m;
+      if(DB.products.find(p=>p.sku===sku)) throw new Error(`El SKU '${sku}' ya existe en el sistema.`);
+      DB.products.push({id:uid(),sku,name,cat,price:+price,cost:+cost,stock:+stock,min:+min,unit,supplier,active:true});
+      res.innerHTML = `<div class="sql-ok">${icon('<path d="M5 13l4 4L19 7"/>',14,"#2D7A3A")} Producto '${esc(name)}' (${esc(sku)}) insertado correctamente. El inventario se actualizo.</div>`;
+      toast(`SQL: '${name}' agregado al inventario.`);
+      buildNav();
+
+    } else if(q.startsWith("UPDATE PRODUCTS")){
+      const m = raw.match(/SET\s+stock\s*=\s*(\d+)\s+WHERE\s+(?:id|sku)\s*=\s*'?([^'\s;]+)'?/i);
+      if(!m) throw new Error("Formato: UPDATE products SET stock = 150 WHERE sku = 'DK-001'");
+      const [,newStock,identifier] = m;
+      const p = DB.products.find(x=>String(x.id)===identifier||x.sku===identifier);
+      if(!p) throw new Error(`No se encontro producto con id/sku: ${identifier}`);
+      const old = p.stock;
+      p.stock = +newStock;
+      res.innerHTML = `<div class="sql-ok">${icon('<path d="M5 13l4 4L19 7"/>',14,"#2D7A3A")} Stock de '${esc(p.name)}' actualizado: ${old} → ${newStock} ${p.unit}</div>`;
+      toast(`SQL: Stock de '${p.name}' actualizado a ${newStock}.`);
+      buildNav();
+
+    } else if(q.startsWith("DELETE FROM PRODUCTS")){
+      const m = raw.match(/WHERE\s+(?:id|sku)\s*=\s*'?([^'\s;]+)'?/i);
+      if(!m) throw new Error("Formato: DELETE FROM products WHERE sku = 'DK-011'");
+      const identifier = m[1];
+      const p = DB.products.find(x=>String(x.id)===identifier||x.sku===identifier);
+      if(!p) throw new Error(`No se encontro producto: ${identifier}`);
+      DB.products = DB.products.filter(x=>x!==p);
+      res.innerHTML = `<div class="sql-ok">${icon('<path d="M5 13l4 4L19 7"/>',14,"#2D7A3A")} Producto '${esc(p.name)}' eliminado del sistema.</div>`;
+      toast(`SQL: '${p.name}' eliminado.`);
+      buildNav();
+
+    } else {
+      throw new Error("Operaciones disponibles: SELECT, INSERT INTO products, UPDATE products SET stock, DELETE FROM products");
+    }
+  } catch(e){
+    res.innerHTML = `<div class="sql-err"><strong>Error:</strong> ${esc(e.message)}</div>`;
+  }
+}
+
+// ── SETTINGS ──────────────────────────────────────────────────────────────────
+function pageSettings(){
+  return `
+  <div class="section-title" style="margin-bottom:20px">CONFIGURACION</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px">
+    <div class="card">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;margin-bottom:13px">CATEGORIAS</div>
+      <div style="display:flex;gap:8px;margin-bottom:13px">
+        <input class="input" id="new_cat" placeholder="Nueva categoria..." onkeydown="if(event.key==='Enter')addCat()">
+        <button class="btn btn-primary" onclick="addCat()">Agregar</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${DB.categories.map(c=>`
+        <div style="display:flex;align-items:center;gap:5px;background:#F2EFEC;border-radius:6px;padding:4px 10px;font-size:13px">
+          <span>${esc(c)}</span>
+          <button class="btn-icon" onclick="delCat('${esc(c)}')" style="padding:1px">${icon('<path d="M18 6L6 18M6 6l12 12"/>',11,"#A09990")}</button>
+        </div>`).join("")}
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;margin-bottom:13px">PROVEEDORES</div>
+      <div style="display:flex;gap:8px;margin-bottom:13px">
+        <input class="input" id="new_sup" placeholder="Nuevo proveedor..." onkeydown="if(event.key==='Enter')addSup()">
+        <button class="btn btn-primary" onclick="addSup()">Agregar</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        ${DB.suppliers.map(s=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#FAF9F8;border-radius:6px;font-size:13.5px">
+          <span>${esc(s)}</span>
+          <button class="btn-icon" onclick="delSup('${esc(s)}')">${icon('<path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>',13,"#C0392B")}</button>
+        </div>`).join("")}
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;margin-bottom:13px">INFORMACION DE LA TIENDA</div>
+      ${[["Nombre","Dunkin Azua"],["Direccion","Av. Principal, Azua, RD"],["RNC","1-31-00000-0"],["Telefono","(809) 555-0000"],["ITBIS por defecto","18%"]].map(([k,v])=>`
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F2EFEC;font-size:13.5px">
+        <span style="color:#A09990">${k}</span><span style="font-weight:500">${v}</span>
+      </div>`).join("")}
+    </div>
+    <div class="card">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;margin-bottom:13px">ACCESO AL SISTEMA</div>
+      <div style="background:#FEF3E7;border-radius:7px;padding:11px 13px;font-size:13px;color:#A0520A;margin-bottom:13px">
+        Este sistema funciona sin base de datos real. Los datos se mantienen mientras el archivo este abierto. Para conectar a MySQL o PostgreSQL, usa el schema de la seccion SQL.
+      </div>
+      ${[{u:"admin",r:"Administrador",p:"Acceso total al sistema"},{u:"cajero",r:"Cajero",p:"Facturas y consultas"}].map(u=>`
+      <div style="padding:9px 0;border-bottom:1px solid #F2EFEC">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+          <span style="font-weight:600;font-size:14px">${u.u}</span>
+          <span class="badge ${u.r==="Administrador"?"badge-warning":"badge-gray"}">${u.r}</span>
+        </div>
+        <div style="font-size:12px;color:#A09990">${u.p}</div>
+      </div>`).join("")}
+    </div>
+  </div>`;
+}
+
+function addCat(){
+  const v = $("new_cat").value.trim();
+  if(!v) return;
+  if(DB.categories.includes(v)){ toast("Esa categoria ya existe.","#C0392B"); return; }
+  DB.categories.push(v); toast("Categoria agregada."); render();
+}
+function delCat(c){
+  if(DB.products.find(p=>p.cat===c)){ toast("No se puede eliminar: categoria en uso.","#C0392B"); return; }
+  DB.categories=DB.categories.filter(x=>x!==c); toast("Categoria eliminada."); render();
+}
+function addSup(){
+  const v = $("new_sup").value.trim();
+  if(!v) return;
+  if(DB.suppliers.includes(v)){ toast("Ese proveedor ya existe.","#C0392B"); return; }
+  DB.suppliers.push(v); toast("Proveedor agregado."); render();
+}
+function delSup(s){ DB.suppliers=DB.suppliers.filter(x=>x!==s); toast("Proveedor eliminado."); render(); }
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+function showModal(html, wide=false){
+  let ov = $("modal_overlay");
+  if(!ov){ ov=document.createElement("div"); ov.id="modal_overlay"; ov.className="overlay"; document.body.appendChild(ov); }
+  ov.innerHTML = `<div class="modal${wide?" modal-wide":""}" onclick="event.stopPropagation()">${html}</div>`;
+  ov.style.display = "flex";
+  ov.onclick = closeModal;
+  // focus first input
+  setTimeout(()=>{ const inp=ov.querySelector("input"); if(inp)inp.focus(); },50);
+}
+function closeModal(){
+  const ov=$("modal_overlay");
+  if(ov) ov.style.display="none";
+}
+
+// ── BIND EVENTS ───────────────────────────────────────────────────────────────
+function bindEvents(){
+  // ESC to close modal
+  document.onkeydown = e => { if(e.key==="Escape") closeModal(); };
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+buildNav();
+render();
+</script>
+</body>
+</html>
