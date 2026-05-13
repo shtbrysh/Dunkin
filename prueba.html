@@ -3,17 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dunkin' RD - Localizador</title>
+    <title>Dunkin' RD – Localizador</title>
 
+    <!-- Librerías de Mapas (Segundo Código) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- Fuentes (Primer Código) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
     <link href="https://fonts.cdnfonts.com/css/dunkin" rel="stylesheet">
 
     <style>
-        /* ===== VARIABLES DEL PRIMER CÓDIGO ===== */
+        /* ===== VARIABLES (EXACTAS CÓDIGO 1) ===== */
         :root {
             --orange:       #FF6719;
             --pink:         #E11383;
@@ -33,31 +36,7 @@
             cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><text y="24" font-size="22">🍩</text></svg>') 16 16, auto;
         }
 
-        a, button, .icon-btn {
-            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><text y="24" font-size="22">🧁</text></svg>') 16 16, pointer;
-        }
-
-        /* ===== SPLASH SCREEN (PRIMER CÓDIGO) ===== */
-        #splash {
-            position: fixed;
-            inset: 0;
-            z-index: 99999;
-            background: #fff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            transition: opacity 0.7s ease, transform 0.7s ease;
-        }
-        #splash.hide { opacity: 0; transform: scale(1.04); pointer-events: none; }
-        .splash-logo { font-family: 'Dunkin', cursive; font-size: 5rem; color: var(--orange); }
-        .splash-logo span { color: var(--pink); }
-        .splash-bar { width: 200px; height: 4px; background: #f0f0f0; border-radius: 99px; overflow: hidden; }
-        .splash-bar-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--orange), var(--pink)); animation: loadBar 1.4s 1s forwards; }
-        @keyframes loadBar { to { width: 100%; } }
-
-        /* ===== HEADER EXACTO DEL PRIMER CÓDIGO ===== */
+        /* ===== HEADER (COPIA EXACTA CÓDIGO 1) ===== */
         .main-header {
             position: sticky;
             top: 0;
@@ -70,12 +49,18 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            height: 90px; /* Altura original */
+            height: 90px;
         }
 
-        .logo-titulo { position: relative; width: 190px; height: 80px; flex-shrink: 0; }
+        .logo-titulo {
+            position: relative;
+            width: 190px;
+            height: 80px;
+            flex-shrink: 0;
+        }
+
         .logo-titulo img {
-            height: 130px; /* Tamaño original del primer código */
+            height: 130px;
             width: auto;
             object-fit: contain;
             position: absolute;
@@ -98,15 +83,30 @@
             text-decoration: none;
             color: #1a1a1a;
             font-family: 'Dunkin', cursive;
+            font-weight: 500;
             font-size: 1.5rem;
             position: relative;
             transition: color 0.3s ease, transform 0.3s ease;
+            display: inline-block;
+        }
+
+        .nav-menu a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--orange), var(--pink));
+            border-radius: 99px;
+            transition: width 0.3s ease;
         }
 
         .nav-menu a:hover { color: var(--pink); transform: translateY(-3px); }
+        .nav-menu a:hover::after { width: 100%; }
 
-        /* ICONOS DERECHA DEL PRIMER CÓDIGO */
         .icons-right { display: flex; gap: 12px; align-items: center; }
+
         .icon-btn {
             background: white;
             border: 1.5px solid #f0eded;
@@ -122,60 +122,112 @@
             text-decoration: none;
             color: inherit;
         }
-        .icon-btn:hover { transform: translateY(-6px) scale(1.1); box-shadow: 0 10px 24px rgba(225,19,131,0.25); }
-        .icon-btn .material-icons { font-size: 26px; color: var(--brown); z-index: 1; }
-        .icon-label { font-size: 0.62rem; font-weight: 700; color: #555; z-index: 1; text-transform: uppercase; }
-        .icon-btn:hover .material-icons, .icon-btn:hover .icon-label { color: white; }
-        .icon-btn::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, var(--orange), var(--pink)); opacity: 0; transition: opacity 0.35s; }
+
+        .icon-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--orange), var(--pink));
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+
         .icon-btn:hover::before { opacity: 1; }
+        .icon-btn:hover { transform: translateY(-6px) scale(1.1); box-shadow: 0 10px 24px rgba(225,19,131,0.25); }
 
-        /* ===== CONTENIDO MAPA ===== */
-        .map-container { padding: 50px 8%; text-align: center; }
-        .map-container h1 { font-family: 'Titan One'; font-size: 3rem; color: var(--pink); margin-bottom: 30px; }
-        #map { height: 500px; border-radius: var(--radius-xl); box-shadow: var(--shadow-warm); border: 10px solid white; }
+        .icon-wrapper .material-icons { font-size: 26px; color: var(--brown); position: relative; z-index: 1; transition: 0.3s; }
+        .icon-label { font-size: 0.62rem; font-weight: 700; color: #555; position: relative; z-index: 1; text-transform: uppercase; }
+        .icon-btn:hover .material-icons, .icon-btn:hover .icon-label { color: white; }
 
-        /* ===== FOOTER ===== */
-        .main-footer { background: white; padding: 60px 8% 30px; margin-top: 50px; border-radius: 40px 40px 0 0; }
-        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; }
-        .footer-brand h2 { font-family: 'Dunkin'; color: var(--orange); font-size: 2rem; }
+        /* ===== SECCIÓN MAPA (FUNCIONALIDAD CÓDIGO 2) ===== */
+        .map-section {
+            padding: 60px 8%;
+            text-align: center;
+        }
+
+        .map-section h1 {
+            font-family: 'Titan One', cursive;
+            font-size: 3.5rem;
+            color: var(--pink);
+            margin-bottom: 10px;
+            text-shadow: 3px 3px 0 rgba(225,19,131,0.1);
+        }
+
+        .map-section h1 span { color: var(--orange); }
+
+        #map {
+            height: 550px;
+            width: 100%;
+            margin-top: 30px;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-warm);
+            border: 10px solid white;
+            z-index: 1;
+        }
+
+        /* ===== FOOTER (COHERENTE CON CÓDIGO 1) ===== */
+        .main-footer {
+            background: white;
+            padding: 60px 8% 30px;
+            border-radius: 40px 40px 0 0;
+            margin-top: 80px;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.05);
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+        }
+
+        .footer-brand h2 { font-family: 'Dunkin', cursive; color: var(--orange); font-size: 2.5rem; }
         .footer-brand h2 span { color: var(--pink); }
-        .footer-bottom { border-top: 1px solid #eee; margin-top: 40px; padding-top: 20px; text-align: center; color: var(--brown); font-weight: bold; }
+        
+        .footer-links h4 { font-family: 'Titan One', cursive; color: var(--brown); margin-bottom: 20px; }
+        .footer-links p { margin-bottom: 10px; color: #555; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .footer-links p:hover { color: var(--pink); transform: translateX(5px); }
 
-        /* CHISPAS */
-        .sprinkle { position: fixed; width: 8px; height: 4px; pointer-events: none; z-index: 9999; animation: spark-out 0.8s linear forwards; }
-        @keyframes spark-out { to { transform: translate(var(--mdx), var(--mdy)) rotate(360deg); opacity: 0; } }
+        .footer-bottom {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            font-weight: 700;
+            color: var(--brown);
+        }
     </style>
 </head>
 <body>
 
-    <div id="splash">
-        <div class="splash-logo">DUNKIN' <span>RD</span></div>
-        <div class="splash-bar"><div class="splash-bar-fill"></div></div>
-    </div>
-
     <header class="main-header">
         <div class="logo-titulo">
+            <!-- Logo con el tamaño exacto de 130px del código 1 -->
             <img src="https://upload.wikimedia.org/wikipedia/en/thumb/d/d3/Dunkin%27_Donuts_logo.svg/1200px-Dunkin%27_Donuts_logo.svg.png" alt="Dunkin Logo">
         </div>
+
         <ul class="nav-menu">
             <li><a href="#">Inicio</a></li>
             <li><a href="#">Menú</a></li>
             <li><a href="#">Tiendas</a></li>
         </ul>
+
         <div class="icons-right">
             <a href="#" class="icon-btn">
-                <span class="material-icons">shopping_cart</span>
+                <div class="icon-wrapper"><span class="material-icons">shopping_bag</span></div>
                 <span class="icon-label">Carrito</span>
             </a>
             <a href="#" class="icon-btn">
-                <span class="material-icons">location_on</span>
+                <div class="icon-wrapper"><span class="material-icons">location_on</span></div>
                 <span class="icon-label">RD</span>
             </a>
         </div>
     </header>
 
-    <main class="map-container">
-        <h1>Localizador <span>RD</span></h1>
+    <main class="map-section">
+        <h1>Dunkin' <span>RD</span></h1>
+        <p style="font-family: 'Dancing Script', cursive; font-size: 1.8rem; color: var(--brown);">Encuentra tu rincón favorito</p>
+        
+        <!-- El mapa interactivo del código 2 -->
         <div id="map"></div>
     </main>
 
@@ -183,39 +235,37 @@
         <div class="footer-grid">
             <div class="footer-brand">
                 <h2>DUNKIN' <span>RD</span></h2>
-                <p>El sabor que te mueve, ahora más cerca de ti en Dominicana.</p>
+                <p>La frescura que te mueve, ahora en todo el mapa.</p>
             </div>
-            <div>
-                <h4 style="font-family: 'Titan One'; color: var(--pink);">Legal</h4>
-                <p>Términos y condiciones</p>
-                <p>Política de privacidad</p>
+            <div class="footer-links">
+                <h4>Explora</h4>
+                <p>Nuestras Donas</p>
+                <p>Café y Bebidas</p>
+                <p>Promociones</p>
+            </div>
+            <div class="footer-links">
+                <h4>Contacto</h4>
+                <p>Servicio al cliente</p>
+                <p>Preguntas frecuentes</p>
             </div>
         </div>
         <div class="footer-bottom">
-            &copy; 2026 Dunkin' Donuts RD. Hecho con 🍩
+            &copy; 2026 DUNKIN' DONUTS DOMINICANA. TODOS LOS DERECHOS RESERVADOS.
         </div>
     </footer>
 
+    <!-- Script para inicializar el mapa -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Quitar Splash
-        window.addEventListener('load', () => {
-            setTimeout(() => document.getElementById('splash').classList.add('hide'), 1500);
-        });
+        // Inicializar mapa centrado en RD (Código 2)
+        const map = L.map('map').setView([18.4861, -69.9312], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-        // Chispas
-        document.addEventListener('mousemove', (e) => {
-            if (Math.random() > 0.8) {
-                const s = document.createElement('div');
-                s.className = 'sprinkle';
-                s.style.left = e.clientX + 'px';
-                s.style.top = e.clientY + 'px';
-                s.style.backgroundColor = ['#FF6719', '#E11383', '#653819'][Math.floor(Math.random()*3)];
-                s.style.setProperty('--mdx', (Math.random()-0.5)*100+'px');
-                s.style.setProperty('--mdy', (Math.random()-0.5)*100+'px');
-                document.body.appendChild(s);
-                setTimeout(() => s.remove(), 800);
-            }
-        });
+        // Ejemplo de marcador
+        L.marker([18.4861, -69.9312]).addTo(map)
+            .bindPopup('<b>Dunkin\' Donuts RD</b><br>¡Te esperamos!')
+            .openPopup();
     </script>
+
 </body>
 </html>
